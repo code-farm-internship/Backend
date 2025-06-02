@@ -1,4 +1,5 @@
 import mongoose, { Schema } from 'mongoose';
+import { IBookmark } from '@/types/bookmark';
 
 const bookmarkSchema = new Schema(
     {
@@ -23,5 +24,5 @@ const bookmarkSchema = new Schema(
     },
 );
 
-const Bookmark = mongoose.model('Bookmark', bookmarkSchema);
+const Bookmark = mongoose.model<IBookmark>('Bookmark', bookmarkSchema);
 export default Bookmark;
