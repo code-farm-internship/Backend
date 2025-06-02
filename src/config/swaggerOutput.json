@@ -2,504 +2,1240 @@
     "swagger": "2.0",
     "info": {
         "title": "E-commerce API",
-        "description": "Tài liệu API cho hệ thống E-commerce",
+        "description": "Tài liệu API cho hệ thống E-commerce, cung cấp các endpoint để quản lý danh mục, xác thực, nhà cung cấp, định dạng, sản phẩm, giỏ hàng và chiết khấu.",
         "version": "1.0.0"
     },
     "host": "localhost:8000",
     "basePath": "/api/v1",
     "schemes": ["http"],
+    "produces": ["application/json"],
+    "parameters": {
+        "IdPath": {
+            "name": "id",
+            "in": "path",
+            "required": true,
+            "type": "string",
+            "description": "Id duy nhất"
+        },
+        "ProductIdPath": {
+            "name": "productId",
+            "in": "path",
+            "required": true,
+            "type": "string",
+            "description": "Id duy nhất của sản phẩm"
+        },
+        "VariantIdPath": {
+            "name": "variantId",
+            "in": "path",
+            "required": true,
+            "type": "string",
+            "description": "Id duy nhất của biến thể sản phẩm"
+        },
+        "AuthorizationHeader": {
+            "name": "Authorization",
+            "in": "header",
+            "required": true,
+            "type": "string",
+            "description": "Token Bearer để xác thực"
+        }
+    },
     "paths": {
-        "/register": {
-            "post": {
-                "description": "",
-                "responses": {
-                    "default": {
-                        "description": ""
-                    }
-                }
-            }
-        },
-        "/login": {
-            "post": {
-                "description": "",
-                "responses": {
-                    "default": {
-                        "description": ""
-                    }
-                }
-            }
-        },
-        "/refresh": {
-            "get": {
-                "description": "",
-                "parameters": [
-                    {
-                        "name": "authorization",
-                        "in": "header",
-                        "type": "string"
-                    },
-                    {
-                        "name": "Authorization",
-                        "in": "header",
-                        "type": "string"
-                    }
-                ],
-                "responses": {
-                    "default": {
-                        "description": ""
-                    }
-                }
-            }
-        },
-        "/verify-email": {
-            "get": {
-                "description": "",
-                "responses": {
-                    "default": {
-                        "description": ""
-                    }
-                }
-            }
-        },
-        "/resend-verification": {
-            "post": {
-                "description": "",
-                "responses": {
-                    "default": {
-                        "description": ""
-                    }
-                }
-            }
-        },
         "/categories/all": {
             "get": {
-                "description": "",
+                "description": "Lấy danh sách tất cả các category trong hệ thống.",
                 "responses": {
-                    "default": {
-                        "description": "hehehhehehehhehe"
+                    "200": {
+                        "description": "Danh sách các category.",
+                        "schema": {
+                            "type": "array",
+                            "items": {
+                                "$ref": "#/definitions/Category"
+                            }
+                        }
+                    },
+                    "500": {
+                        "description": "Lỗi máy chủ nội bộ"
                     }
                 }
             }
         },
+
         "/categories/{id}": {
             "get": {
-                "description": "",
-                "parameters": [
-                    {
-                        "name": "id",
-                        "in": "path",
-                        "required": true,
-                        "type": "string"
-                    }
-                ],
+                "description": "Lấy thông tin chi tiết của một category theo ID.",
+                "parameters": [{ "$ref": "#/parameters/IdPath" }],
                 "responses": {
-                    "default": {
-                        "description": ""
-                    }
-                }
-            }
-        },
-        "/categories/{id}": {
-            "get": {
-                "description": "",
-                "parameters": [
-                    {
-                        "name": "id",
-                        "in": "path",
-                        "required": true,
-                        "type": "string"
-                    }
-                ],
-                "responses": {
-                    "default": {
-                        "description": ""
+                    "200": {
+                        "description": "Thông tin chi tiết category.",
+                        "schema": {
+                            "$ref": "#/definitions/Category"
+                        }
+                    },
+                    "404": {
+                        "description": "Không tìm thấy category."
+                    },
+                    "500": {
+                        "description": "Lỗi máy chủ nội bộ."
                     }
                 }
             }
         },
         "/categories/create": {
             "post": {
-                "description": "",
+                "description": "Tạo một category mới. Yêu cầu verify admin",
+                "consumes": ["application/json"],
+                "parameters": [
+                    {
+                        "name": "body",
+                        "in": "body",
+                        "required": true,
+                        "schema": {
+                            "$ref": "#/definitions/CategoryInput"
+                        }
+                    }
+                ],
                 "responses": {
-                    "default": {
-                        "description": ""
+                    "201": {
+                        "description": "CategoryI được tạo thành công",
+                        "schema": {
+                            "$ref": "#/definitions/Category"
+                        }
+                    },
+                    "400": {
+                        "description": "Dữ liệu đầu vào không hợp lệ"
+                    },
+                    "401": {
+                        "description": "Không được phép"
+                    },
+                    "500": {
+                        "description": "Lỗi máy chủ nội bộ"
                     }
                 }
             }
         },
         "/categories/update/{id}": {
             "put": {
-                "description": "",
+                "description": "Cập nhật một category hiện có theo id. Yêu cầu verify admin.",
+                "consumes": ["application/json"],
                 "parameters": [
+                    { "$ref": "#/parameters/IdPath" },
                     {
-                        "name": "id",
-                        "in": "path",
+                        "name": "body",
+                        "in": "body",
                         "required": true,
-                        "type": "string"
+                        "schema": {
+                            "$ref": "#/definitions/CategoryInput"
+                        }
                     }
                 ],
                 "responses": {
-                    "default": {
-                        "description": ""
+                    "200": {
+                        "description": "Danh mục được cập nhật thành công",
+                        "schema": {
+                            "$ref": "#/definitions/Category"
+                        }
+                    },
+                    "400": {
+                        "description": "Dữ liệu đầu vào không hợp lệ"
+                    },
+                    "401": {
+                        "description": "Không được phép"
+                    },
+                    "404": {
+                        "description": "Không tìm thấy category"
+                    },
+                    "500": {
+                        "description": "Lỗi máy chủ nội bộ"
                     }
                 }
             }
         },
         "/categories/delete/{id}": {
             "delete": {
-                "description": "",
-                "parameters": [
-                    {
-                        "name": "id",
-                        "in": "path",
-                        "required": true,
-                        "type": "string"
-                    }
-                ],
+                "description": "Xóa một category theo ID. Yêu cầu verify admin.",
+                "parameters": [{ "$ref": "#/parameters/IdPath" }],
                 "responses": {
-                    "default": {
-                        "description": ""
+                    "204": {
+                        "description": "Category được xóa thành công."
+                    },
+                    "401": {
+                        "description": "Không được phép xóa."
+                    },
+                    "404": {
+                        "description": "Không tìm thấy category."
+                    },
+                    "500": {
+                        "description": "Lỗi máy chủ nội bộ."
                     }
                 }
             }
         },
         "/auth/register": {
             "post": {
-                "description": "",
+                "description": "Đăng ký một user mới trong hệ thống.",
+                "consumes": ["application/json"],
+                "parameters": [
+                    {
+                        "name": "body",
+                        "in": "body",
+                        "required": true,
+                        "schema": {
+                            "$ref": "#/definitions/UserRegisterInput"
+                        }
+                    }
+                ],
                 "responses": {
-                    "default": {
-                        "description": ""
+                    "201": {
+                        "description": "User được đăng ký thành công",
+                        "schema": {
+                            "$ref": "#/definitions/User"
+                        }
+                    },
+                    "400": {
+                        "description": "Dữ liệu đầu vào không hợp lệ"
+                    },
+                    "409": {
+                        "description": "User đã tồn tại"
+                    },
+                    "500": {
+                        "description": "Lỗi máy chủ nội bộ"
                     }
                 }
             }
         },
         "/auth/login": {
             "post": {
-                "description": "",
+                "description": "Xác thực user và trả về token JWT.",
+                "consumes": ["application/json"],
+                "parameters": [
+                    {
+                        "name": "body",
+                        "in": "body",
+                        "required": true,
+                        "schema": {
+                            "$ref": "#/definitions/UserLoginInput"
+                        }
+                    }
+                ],
                 "responses": {
-                    "default": {
-                        "description": ""
+                    "200": {
+                        "description": "Đăng nhập thành công",
+                        "schema": {
+                            "$ref": "#/definitions/AuthResponse"
+                        }
+                    },
+                    "401": {
+                        "description": "Thông tin đăng nhập không hợp lệ"
+                    },
+                    "500": {
+                        "description": "Lỗi máy chủ nội bộ"
                     }
                 }
             }
         },
         "/auth/refresh": {
             "get": {
-                "description": "",
-                "parameters": [
-                    {
-                        "name": "authorization",
-                        "in": "header",
-                        "type": "string"
-                    },
-                    {
-                        "name": "Authorization",
-                        "in": "header",
-                        "type": "string"
-                    }
-                ],
+                "description": "Làm mới token JWT bằng refresh token hợp lệ.",
+                "parameters": [{ "$ref": "#/parameters/AuthorizationHeader" }],
                 "responses": {
-                    "default": {
-                        "description": ""
+                    "200": {
+                        "description": "Token được làm mới thành công",
+                        "schema": {
+                            "$ref": "#/definitions/AuthResponse"
+                        }
+                    },
+                    "401": {
+                        "description": "Refresh token không hợp lệ hoặc đã hết hạn"
+                    },
+                    "500": {
+                        "description": "Lỗi máy chủ nội bộ"
                     }
                 }
             }
         },
         "/auth/verify-email": {
-            "get": {
-                "description": "",
+            "post": {
+                "description": "Xác minh email của người dùng bằng token xác minh.",
+                "consumes": ["application/json"],
+                "parameters": [
+                    {
+                        "name": "body",
+                        "in": "body",
+                        "required": true,
+                        "schema": {
+                            "$ref": "#/definitions/VerifyEmailInput"
+                        }
+                    }
+                ],
                 "responses": {
-                    "default": {
-                        "description": ""
+                    "200": {
+                        "description": "Email được xác minh thành công"
+                    },
+                    "400": {
+                        "description": "Token không hợp lệ"
+                    },
+                    "500": {
+                        "description": "Lỗi máy chủ nội bộ"
                     }
                 }
             }
         },
         "/auth/resend-verification": {
             "post": {
-                "description": "",
+                "description": "Gửi lại email xác minh cho user.",
+                "consumes": ["application/json"],
+                "parameters": [
+                    {
+                        "name": "body",
+                        "in": "body",
+                        "required": true,
+                        "schema": {
+                            "type": "object",
+                            "properties": {
+                                "email": {
+                                    "type": "string",
+                                    "format": "email"
+                                }
+                            },
+                            "required": ["email"]
+                        }
+                    }
+                ],
                 "responses": {
-                    "default": {
-                        "description": ""
+                    "200": {
+                        "description": "Email xác minh được gửi lại thành công"
+                    },
+                    "404": {
+                        "description": "Không tìm thấy user"
+                    },
+                    "500": {
+                        "description": "Lỗi máy chủ nội bộ"
                     }
                 }
             }
         },
         "/vendors/all": {
             "get": {
-                "description": "",
+                "description": "Lấy danh sách tất cả các vendor trong hệ thống.",
                 "responses": {
-                    "default": {
-                        "description": ""
+                    "200": {
+                        "description": "Danh sách các vendor.",
+                        "schema": {
+                            "type": "array",
+                            "items": {
+                                "$ref": "#/definitions/Vendor"
+                            }
+                        }
+                    },
+                    "500": {
+                        "description": "Lỗi máy chủ nội bộ."
                     }
                 }
             }
         },
         "/vendors/{id}": {
             "get": {
-                "description": "",
-                "parameters": [
-                    {
-                        "name": "id",
-                        "in": "path",
-                        "required": true,
-                        "type": "string"
-                    }
-                ],
+                "description": "Lấy thông tin chi tiết của một vendor cụ thể theo ID.",
+                "parameters": [{ "$ref": "#/parameters/IdPath" }],
                 "responses": {
-                    "default": {
-                        "description": ""
+                    "200": {
+                        "description": "Thông tin chi tiết vendor",
+                        "schema": {
+                            "$ref": "#/definitions/Vendor"
+                        }
+                    },
+                    "404": {
+                        "description": "Không tìm thấy vendor"
+                    },
+                    "500": {
+                        "description": "Lỗi máy chủ nội bộ"
                     }
                 }
             }
         },
         "/vendors/create": {
             "post": {
-                "description": "",
+                "description": "Tạo một nhà vendor. Yêu cầu xác thực admin.",
+                "consumes": ["application/json"],
+                "parameters": [
+                    {
+                        "name": "body",
+                        "in": "body",
+                        "required": true,
+                        "schema": {
+                            "$ref": "#/definitions/VendorInput"
+                        }
+                    }
+                ],
                 "responses": {
-                    "default": {
-                        "description": ""
+                    "201": {
+                        "description": "Nhà cung cấp được tạo thành công",
+                        "schema": {
+                            "$ref": "#/definitions/Vendor"
+                        }
+                    },
+                    "400": {
+                        "description": "Dữ liệu đầu vào không hợp lệ"
+                    },
+                    "401": {
+                        "description": "Không được phép"
+                    },
+                    "500": {
+                        "description": "Lỗi máy chủ nội bộ"
                     }
                 }
             }
         },
         "/vendors/update/{id}": {
             "put": {
-                "description": "",
+                "description": "Cập nhật một nhà cung cấp hiện có theo ID. Yêu cầu xác thực admin.",
+                "consumes": ["application/json"],
                 "parameters": [
+                    { "$ref": "#/parameters/IdPath" },
                     {
-                        "name": "id",
-                        "in": "path",
+                        "name": "body",
+                        "in": "body",
                         "required": true,
-                        "type": "string"
+                        "schema": {
+                            "$ref": "#/definitions/VendorInput"
+                        }
                     }
                 ],
                 "responses": {
-                    "default": {
-                        "description": ""
+                    "200": {
+                        "description": "Nhà cung cấp được cập nhật thành công",
+                        "schema": {
+                            "$ref": "#/definitions/Vendor"
+                        }
+                    },
+                    "400": {
+                        "description": "Dữ liệu đầu vào không hợp lệ"
+                    },
+                    "401": {
+                        "description": "Không được phép"
+                    },
+                    "404": {
+                        "description": "Không tìm thấy nhà cung cấp"
+                    },
+                    "500": {
+                        "description": "Lỗi máy chủ nội bộ"
                     }
                 }
             }
         },
         "/formats/all": {
             "get": {
-                "description": "",
+                "description": "Lấy danh sách tất cả các định dạng sản phẩm trong hệ thống.",
                 "responses": {
-                    "default": {
-                        "description": ""
+                    "200": {
+                        "description": "Danh sách các định dạng",
+                        "schema": {
+                            "type": "array",
+                            "items": {
+                                "$ref": "#/definitions/Format"
+                            }
+                        }
+                    },
+                    "500": {
+                        "description": "Lỗi máy chủ nội bộ"
                     }
                 }
             }
         },
         "/formats/{id}": {
             "get": {
-                "description": "",
-                "parameters": [
-                    {
-                        "name": "id",
-                        "in": "path",
-                        "required": true,
-                        "type": "string"
-                    }
-                ],
+                "description": "Lấy thông tin chi tiết của một định dạng cụ thể theo ID.",
+                "parameters": [{ "$ref": "#/parameters/IdPath" }],
                 "responses": {
-                    "default": {
-                        "description": ""
+                    "200": {
+                        "description": "Thông tin chi tiết định dạng",
+                        "schema": {
+                            "$ref": "#/definitions/Format"
+                        }
+                    },
+                    "404": {
+                        "description": "Không tìm thấy định dạng"
+                    },
+                    "500": {
+                        "description": "Lỗi máy chủ nội bộ"
                     }
                 }
             }
         },
         "/formats/create": {
             "post": {
-                "description": "",
+                "description": "Tạo một định dạng sản phẩm mới. Yêu cầu xác thực admin.",
+                "consumes": ["application/json"],
+                "parameters": [
+                    {
+                        "name": "body",
+                        "in": "body",
+                        "required": true,
+                        "schema": {
+                            "$ref": "#/definitions/FormatInput"
+                        }
+                    }
+                ],
                 "responses": {
-                    "default": {
-                        "description": ""
+                    "201": {
+                        "description": "Định dạng được tạo thành công",
+                        "schema": {
+                            "$ref": "#/definitions/Format"
+                        }
+                    },
+                    "400": {
+                        "description": "Dữ liệu đầu vào không hợp lệ"
+                    },
+                    "401": {
+                        "description": "Không được phép"
+                    },
+                    "500": {
+                        "description": "Lỗi máy chủ nội bộ"
                     }
                 }
             }
         },
         "/formats/update/{id}": {
             "put": {
-                "description": "",
+                "description": "Cập nhật một định dạng hiện có theo ID. Yêu cầu xác thực admin.",
+                "consumes": ["application/json"],
                 "parameters": [
+                    { "$ref": "#/parameters/IdPath" },
                     {
-                        "name": "id",
-                        "in": "path",
+                        "name": "body",
+                        "in": "body",
                         "required": true,
-                        "type": "string"
+                        "schema": {
+                            "$ref": "#/definitions/FormatInput"
+                        }
                     }
                 ],
                 "responses": {
-                    "default": {
-                        "description": ""
+                    "200": {
+                        "description": "Định dạng được cập nhật thành công",
+                        "schema": {
+                            "$ref": "#/definitions/Format"
+                        }
+                    },
+                    "400": {
+                        "description": "Dữ liệu đầu vào không hợp lệ"
+                    },
+                    "401": {
+                        "description": "Không được phép"
+                    },
+                    "404": {
+                        "description": "Không tìm thấy định dạng"
+                    },
+                    "500": {
+                        "description": "Lỗi máy chủ nội bộ"
                     }
                 }
             }
         },
         "/products/all": {
             "get": {
-                "description": "",
+                "description": "Lấy danh sách tất cả các sản phẩm trong hệ thống.",
                 "responses": {
-                    "default": {
-                        "description": ""
+                    "200": {
+                        "description": "Danh sách các sản phẩm",
+                        "schema": {
+                            "type": "array",
+                            "items": {
+                                "$ref": "#/definitions/Product"
+                            }
+                        }
+                    },
+                    "500": {
+                        "description": "Lỗi máy chủ nội bộ"
                     }
                 }
             }
         },
         "/products/selling": {
             "get": {
-                "description": "",
+                "description": "Lấy danh sách các sản phẩm đang được bán.",
                 "responses": {
-                    "default": {
-                        "description": ""
+                    "200": {
+                        "description": "Danh sách các sản phẩm đang bán",
+                        "schema": {
+                            "type": "array",
+                            "items": {
+                                "$ref": "#/definitions/Product"
+                            }
+                        }
+                    },
+                    "500": {
+                        "description": "Lỗi máy chủ nội bộ"
                     }
                 }
             }
         },
         "/products/featured": {
             "get": {
-                "description": "",
+                "description": "Lấy danh sách các sản phẩm nổi bật.",
                 "responses": {
-                    "default": {
-                        "description": ""
+                    "200": {
+                        "description": "Danh sách các sản phẩm nổi bật",
+                        "schema": {
+                            "type": "array",
+                            "items": {
+                                "$ref": "#/definitions/Product"
+                            }
+                        }
+                    },
+                    "500": {
+                        "description": "Lỗi máy chủ nội bộ"
                     }
                 }
             }
         },
         "/products/variant/{productId}/all": {
             "get": {
-                "description": "",
-                "parameters": [
-                    {
-                        "name": "productId",
-                        "in": "path",
-                        "required": true,
-                        "type": "string"
-                    }
-                ],
+                "description": "Lấy tất cả các biến thể của một sản phẩm cụ thể theo ID sản phẩm.",
+                "parameters": [{ "$ref": "#/parameters/ProductIdPath" }],
                 "responses": {
-                    "default": {
-                        "description": ""
+                    "200": {
+                        "description": "Danh sách các biến thể sản phẩm",
+                        "schema": {
+                            "type": "array",
+                            "items": {
+                                "$ref": "#/definitions/ProductVariant"
+                            }
+                        }
+                    },
+                    "404": {
+                        "description": "Không tìm thấy sản phẩm"
+                    },
+                    "500": {
+                        "description": "Lỗi máy chủ nội bộ"
                     }
                 }
             }
         },
         "/products/{id}": {
             "get": {
-                "description": "",
-                "parameters": [
-                    {
-                        "name": "id",
-                        "in": "path",
-                        "required": true,
-                        "type": "string"
-                    }
-                ],
+                "description": "Lấy thông tin chi tiết của một sản phẩm cụ thể theo ID.",
+                "parameters": [{ "$ref": "#/parameters/IdPath" }],
                 "responses": {
-                    "default": {
-                        "description": ""
+                    "200": {
+                        "description": "Thông tin chi tiết sản phẩm",
+                        "schema": {
+                            "$ref": "#/definitions/Product"
+                        }
+                    },
+                    "404": {
+                        "description": "Không tìm thấy sản phẩm"
+                    },
+                    "500": {
+                        "description": "Lỗi máy chủ nội bộ"
                     }
                 }
             }
         },
         "/products/create": {
             "post": {
-                "description": "",
+                "description": "Tạo một sản phẩm mới. Yêu cầu xác thực nhà cung cấp hoặc admin.",
+                "consumes": ["application/json"],
+                "parameters": [
+                    {
+                        "name": "body",
+                        "in": "body",
+                        "required": true,
+                        "schema": {
+                            "$ref": "#/definitions/ProductInput"
+                        }
+                    }
+                ],
                 "responses": {
-                    "default": {
-                        "description": ""
+                    "201": {
+                        "description": "Sản phẩm được tạo thành công",
+                        "schema": {
+                            "$ref": "#/definitions/Product"
+                        }
+                    },
+                    "400": {
+                        "description": "Dữ liệu đầu vào không hợp lệ"
+                    },
+                    "401": {
+                        "description": "Không được phép"
+                    },
+                    "500": {
+                        "description": "Lỗi máy chủ nội bộ"
                     }
                 }
             }
         },
         "/products/variant": {
             "post": {
-                "description": "",
+                "description": "Tạo một biến thể sản phẩm mới. Yêu cầu xác thực nhà cung cấp hoặc admin.",
+                "consumes": ["application/json"],
+                "parameters": [
+                    {
+                        "name": "body",
+                        "in": "body",
+                        "required": true,
+                        "schema": {
+                            "$ref": "#/definitions/ProductVariantInput"
+                        }
+                    }
+                ],
                 "responses": {
-                    "default": {
-                        "description": ""
+                    "201": {
+                        "description": "Biến thể sản phẩm được tạo thành công",
+                        "schema": {
+                            "$ref": "#/definitions/ProductVariant"
+                        }
+                    },
+                    "400": {
+                        "description": "Dữ liệu đầu vào không hợp lệ"
+                    },
+                    "401": {
+                        "description": "Không được phép"
+                    },
+                    "500": {
+                        "description": "Lỗi máy chủ nội bộ"
                     }
                 }
             }
         },
         "/products/variant/update": {
             "put": {
-                "description": "",
+                "description": "Cập nhật một biến thể sản phẩm hiện có. Yêu cầu xác thực nhà cung cấp hoặc admin.",
+                "consumes": ["application/json"],
+                "parameters": [
+                    {
+                        "name": "body",
+                        "in": "body",
+                        "required": true,
+                        "schema": {
+                            "$ref": "#/definitions/ProductVariantInput"
+                        }
+                    }
+                ],
                 "responses": {
-                    "default": {
-                        "description": ""
+                    "200": {
+                        "description": "Biến thể sản phẩm được cập nhật thành công",
+                        "schema": {
+                            "$ref": "#/definitions/ProductVariant"
+                        }
+                    },
+                    "400": {
+                        "description": "Dữ liệu đầu vào không hợp lệ"
+                    },
+                    "401": {
+                        "description": "Không được phép"
+                    },
+                    "404": {
+                        "description": "Không tìm thấy biến thể sản phẩm"
+                    },
+                    "500": {
+                        "description": "Lỗi máy chủ nội bộ"
                     }
                 }
             }
         },
         "/products/hidden/{id}": {
             "put": {
-                "description": "",
-                "parameters": [
-                    {
-                        "name": "id",
-                        "in": "path",
-                        "required": true,
-                        "type": "string"
-                    }
-                ],
+                "description": "Ẩn một sản phẩm theo ID. Yêu cầu xác thực nhà cung cấp hoặc admin.",
+                "parameters": [{ "$ref": "#/parameters/IdPath" }],
                 "responses": {
-                    "default": {
-                        "description": ""
+                    "200": {
+                        "description": "Sản phẩm được ẩn thành công",
+                        "schema": {
+                            "$ref": "#/definitions/Product"
+                        }
+                    },
+                    "401": {
+                        "description": "Không được phép"
+                    },
+                    "404": {
+                        "description": "Không tìm thấy sản phẩm"
+                    },
+                    "500": {
+                        "description": "Lỗi máy chủ nội bộ"
                     }
                 }
             }
         },
-        "/carts/all": {
+        "/carts/my-cart": {
             "get": {
-                "description": "",
+                "description": "Lấy thông tin giỏ hàng của người dùng đã xác thực.",
+                "parameters": [{ "$ref": "#/parameters/AuthorizationHeader" }],
                 "responses": {
-                    "default": {
-                        "description": ""
+                    "200": {
+                        "description": "Thông tin chi tiết giỏ hàng của người dùng",
+                        "schema": {
+                            "$ref": "#/definitions/Cart"
+                        }
+                    },
+                    "401": {
+                        "description": "Không được phép"
+                    },
+                    "500": {
+                        "description": "Lỗi máy chủ nội bộ"
                     }
                 }
             }
         },
         "/carts/add": {
             "patch": {
-                "description": "",
+                "description": "Thêm một biến thể sản phẩm vào giỏ hàng của người dùng đã xác thực.",
+                "parameters": [
+                    { "$ref": "#/parameters/AuthorizationHeader" },
+                    {
+                        "name": "body",
+                        "in": "body",
+                        "required": true,
+                        "schema": {
+                            "$ref": "#/definitions/CartItemInput"
+                        }
+                    }
+                ],
                 "responses": {
-                    "default": {
-                        "description": ""
+                    "200": {
+                        "description": "Sản phẩm được thêm vào giỏ hàng thành công",
+                        "schema": {
+                            "$ref": "#/definitions/Cart"
+                        }
+                    },
+                    "400": {
+                        "description": "Dữ liệu đầu vào không hợp lệ"
+                    },
+                    "401": {
+                        "description": "Không được phép"
+                    },
+                    "500": {
+                        "description": "Lỗi máy chủ nội bộ"
                     }
                 }
             }
         },
-        "/carts/update": {
+        "/carts/update-quantity": {
             "patch": {
-                "description": "",
+                "description": "Cập nhật số lượng của một biến thể sản phẩm trong giỏ hàng của người dùng đã xác thực.",
+                "parameters": [
+                    { "$ref": "#/parameters/AuthorizationHeader" },
+                    {
+                        "name": "body",
+                        "in": "body",
+                        "required": true,
+                        "schema": {
+                            "$ref": "#/definitions/CartItemUpdateInput"
+                        }
+                    }
+                ],
                 "responses": {
-                    "default": {
-                        "description": ""
+                    "200": {
+                        "description": "Số lượng trong giỏ hàng được cập nhật thành công",
+                        "schema": {
+                            "$ref": "#/definitions/Cart"
+                        }
+                    },
+                    "400": {
+                        "description": "Dữ liệu đầu vào không hợp lệ"
+                    },
+                    "401": {
+                        "description": "Không được phép"
+                    },
+                    "404": {
+                        "description": "Không tìm thấy sản phẩm trong giỏ hàng"
+                    },
+                    "500": {
+                        "description": "Lỗi máy chủ nội bộ"
                     }
                 }
             }
         },
-        "/carts/remove/variantId": {
+        "/carts/remove/{variantId}": {
             "delete": {
-                "description": "",
+                "description": "Xóa một biến thể sản phẩm khỏi giỏ hàng của người dùng đã xác thực.",
+                "parameters": [
+                    { "$ref": "#/parameters/VariantIdPath" },
+                    { "$ref": "#/parameters/AuthorizationHeader" }
+                ],
                 "responses": {
-                    "default": {
-                        "description": ""
+                    "204": {
+                        "description": "Sản phẩm được xóa khỏi giỏ hàng thành công"
+                    },
+                    "401": {
+                        "description": "Không được phép"
+                    },
+                    "404": {
+                        "description": "Không tìm thấy sản phẩm trong giỏ hàng"
+                    },
+                    "500": {
+                        "description": "Lỗi máy chủ nội bộ"
                     }
                 }
             }
         },
         "/discounts/all": {
             "get": {
-                "description": "",
+                "description": "Lấy danh sách tất cả các chiết khấu có sẵn.",
                 "responses": {
-                    "default": {
-                        "description": ""
+                    "200": {
+                        "description": "Danh sách các chiết khấu",
+                        "schema": {
+                            "type": "array",
+                            "items": {
+                                "$ref": "#/definitions/Discount"
+                            }
+                        }
+                    },
+                    "500": {
+                        "description": "Lỗi máy chủ nội bộ"
                     }
                 }
             }
+        }
+    },
+    "definitions": {
+        "Category": {
+            "type": "object",
+            "properties": {
+                "id": {
+                    "type": "string",
+                    "description": "Id duy nhất của category"
+                },
+                "name": {
+                    "type": "string",
+                    "description": "Tên của category"
+                },
+                "description": {
+                    "type": "string",
+                    "description": "Mô tả của category"
+                }
+            },
+            "required": ["id", "name"]
+        },
+        "CategoryInput": {
+            "type": "object",
+            "properties": {
+                "name": {
+                    "type": "string",
+                    "description": "Tên của category"
+                },
+                "description": {
+                    "type": "string",
+                    "description": "Mô tả của category"
+                }
+            },
+            "required": ["name"]
+        },
+        "User": {
+            "type": "object",
+            "properties": {
+                "id": {
+                    "type": "string",
+                    "description": "Id duy nhất của user"
+                },
+                "email": {
+                    "type": "string",
+                    "format": "email",
+                    "description": "Địa chỉ email của user"
+                },
+                "name": {
+                    "type": "string",
+                    "description": "Tên đầy đủ của user"
+                }
+            },
+            "required": ["id", "email"]
+        },
+        "UserRegisterInput": {
+            "type": "object",
+            "properties": {
+                "email": {
+                    "type": "string",
+                    "format": "email",
+                    "description": "Địa chỉ email của user"
+                },
+                "password": {
+                    "type": "string",
+                    "description": "Mật khẩu của user"
+                },
+                "name": {
+                    "type": "string",
+                    "description": "Tên đầy đủ của user"
+                }
+            },
+            "required": ["email", "password", "name"]
+        },
+        "UserLoginInput": {
+            "type": "object",
+            "properties": {
+                "email": {
+                    "type": "string",
+                    "format": "email",
+                    "description": "Địa chỉ email của user"
+                },
+                "password": {
+                    "type": "string",
+                    "description": "Mật khẩu của user"
+                }
+            },
+            "required": ["email", "password"]
+        },
+        "AuthResponse": {
+            "type": "object",
+            "properties": {
+                "accessToken": {
+                    "type": "string",
+                    "description": "JWT access token"
+                },
+                "refreshToken": {
+                    "type": "string",
+                    "description": "JWT refresh token"
+                }
+            },
+            "required": ["accessToken", "refreshToken"]
+        },
+        "VerifyEmailInput": {
+            "type": "object",
+            "properties": {
+                "token": {
+                    "type": "string",
+                    "description": "Email verification token"
+                }
+            },
+            "required": ["token"]
+        },
+        "Vendor": {
+            "type": "object",
+            "properties": {
+                "id": {
+                    "type": "string",
+                    "description": "Định danh duy nhất của nhà cung cấp"
+                },
+                "name": {
+                    "type": "string",
+                    "description": "Tên của nhà cung cấp"
+                },
+                "description": {
+                    "type": "string",
+                    "description": "Mô tả của nhà cung cấp"
+                }
+            },
+            "required": ["id", "name"]
+        },
+        "VendorInput": {
+            "type": "object",
+            "properties": {
+                "name": {
+                    "type": "string",
+                    "description": "Tên của nhà cung cấp"
+                },
+                "description": {
+                    "type": "string",
+                    "description": "Mô tả của nhà cung cấp"
+                }
+            },
+            "required": ["name"]
+        },
+        "Format": {
+            "type": "object",
+            "properties": {
+                "id": {
+                    "type": "string",
+                    "description": "Định danh duy nhất của định dạng"
+                },
+                "name": {
+                    "type": "string",
+                    "description": "Tên của định dạng"
+                }
+            },
+            "required": ["id", "name"]
+        },
+        "FormatInput": {
+            "type": "object",
+            "properties": {
+                "name": {
+                    "type": "string",
+                    "description": "Tên của định dạng"
+                }
+            },
+            "required": ["name"]
+        },
+        "Product": {
+            "type": "object",
+            "properties": {
+                "id": {
+                    "type": "string",
+                    "description": "Định danh duy nhất của sản phẩm"
+                },
+                "name": {
+                    "type": "string",
+                    "description": "Tên của sản phẩm"
+                },
+                "description": {
+                    "type": "string",
+                    "description": "Mô tả của sản phẩm"
+                },
+                "categoryId": {
+                    "type": "string",
+                    "description": "ID của danh mục mà sản phẩm thuộc về"
+                },
+                "vendorId": {
+                    "type": "string",
+                    "description": "ID của nhà cung cấp cung cấp sản phẩm"
+                }
+            },
+            "required": ["id", "name", "categoryId", "vendorId"]
+        },
+        "ProductInput": {
+            "type": "object",
+            "properties": {
+                "name": {
+                    "type": "string",
+                    "description": "Tên của sản phẩm"
+                },
+                "description": {
+                    "type": "string",
+                    "description": "Mô tả của sản phẩm"
+                },
+                "categoryId": {
+                    "type": "string",
+                    "description": "ID của danh mục mà sản phẩm thuộc về"
+                },
+                "vendorId": {
+                    "type": "string",
+                    "description": "ID của nhà cung cấp cung cấp sản phẩm"
+                }
+            },
+            "required": ["name", "categoryId", "vendorId"]
+        },
+        "ProductVariant": {
+            "type": "object",
+            "properties": {
+                "id": {
+                    "type": "string",
+                    "description": "Định danh duy nhất của biến thể sản phẩm"
+                },
+                "productId": {
+                    "type": "string",
+                    "description": "ID của sản phẩm mà biến thể này thuộc về"
+                },
+                "name": {
+                    "type": "string",
+                    "description": "Tên của biến thể (ví dụ: kích thước, màu sắc)"
+                },
+                "price": {
+                    "type": "number",
+                    "description": "Giá của biến thể"
+                },
+                "stock": {
+                    "type": "integer",
+                    "description": "Số lượng tồn kho của biến thể"
+                }
+            },
+            "required": ["id", "productId", "name", "price", "stock"]
+        },
+        "ProductVariantInput": {
+            "type": "object",
+            "properties": {
+                "productId": {
+                    "type": "string",
+                    "description": "ID của sản phẩm mà biến thể này thuộc về"
+                },
+                "name": {
+                    "type": "string",
+                    "description": "Tên của biến thể (ví dụ: kích thước, màu sắc)"
+                },
+                "price": {
+                    "type": "number",
+                    "description": "Giá của biến thể"
+                },
+                "stock": {
+                    "type": "integer",
+                    "description": "Số lượng tồn kho của biến thể"
+                }
+            },
+            "required": ["productId", "name", "price", "stock"]
+        },
+        "Cart": {
+            "type": "object",
+            "properties": {
+                "id": {
+                    "type": "string",
+                    "description": "Định danh duy nhất của giỏ hàng"
+                },
+                "userId": {
+                    "type": "string",
+                    "description": "ID của người dùng sở hữu giỏ hàng"
+                },
+                "items": {
+                    "type": "array",
+                    "items": {
+                        "$ref": "#/definitions/CartItem"
+                    },
+                    "description": "Danh sách các mặt hàng trong giỏ hàng"
+                }
+            },
+            "required": ["id", "userId"]
+        },
+        "CartItem": {
+            "type": "object",
+            "properties": {
+                "variantId": {
+                    "type": "string",
+                    "description": "ID của biến thể sản phẩm"
+                },
+                "quantity": {
+                    "type": "integer",
+                    "description": "Số lượng của biến thể sản phẩm trong giỏ hàng"
+                }
+            },
+            "required": ["variantId", "quantity"]
+        },
+        "CartItemInput": {
+            "type": "object",
+            "properties": {
+                "variantId": {
+                    "type": "string",
+                    "description": "ID của biến thể sản phẩm để thêm"
+                },
+                "quantity": {
+                    "type": "integer",
+                    "description": "Số lượng để thêm vào giỏ hàng"
+                }
+            },
+            "required": ["variantId", "quantity"]
+        },
+        "CartItemUpdateInput": {
+            "type": "object",
+            "properties": {
+                "variantId": {
+                    "type": "string",
+                    "description": "ID của biến thể sản phẩm để cập nhật"
+                },
+                "quantity": {
+                    "type": "integer",
+                    "description": "Số lượng mới cho biến thể sản phẩm"
+                }
+            },
+            "required": ["variantId", "quantity"]
+        },
+        "Discount": {
+            "type": "object",
+            "properties": {
+                "id": {
+                    "type": "string",
+                    "description": "Định danh duy nhất của chiết khấu"
+                },
+                "code": {
+                    "type": "string",
+                    "description": "Mã chiết khấu"
+                },
+                "value": {
+                    "type": "number",
+                    "description": "Giá trị chiết khấu (phần trăm hoặc số tiền cố định)"
+                },
+                "type": {
+                    "type": "string",
+                    "enum": ["percentage", "fixed"],
+                    "description": "Loại chiết khấu"
+                }
+            },
+            "required": ["id", "code", "value", "type"]
         }
     }
 }
