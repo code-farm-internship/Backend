@@ -6,3 +6,4 @@ export * as productController from './product.controller';
 export * as cartController from './cart.controller';
 export * as discountController from './discount.controller';
 export * as bookmarkController from './bookmark.controller';
+export * as orderController from './order.controller';

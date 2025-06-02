@@ -5,3 +5,5 @@ export * as formatService from './format.service';
 export * as productService from './product.service';
 export * as cartService from './cart.service';
 export * as discountService from './discount.service';
+export * as bookmarkService from './bookmark.service';
+export * as orderService from './order.service';

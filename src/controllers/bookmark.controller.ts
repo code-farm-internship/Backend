@@ -1,5 +1,5 @@
 import asyncHandler from '@/helpers/asyncHandler';
-import * as bookmarkService from '@/services/bookmark.service';
+import { bookmarkService } from '@/services';
 import { NextFunction, Request, Response } from 'express';
 
 export const getAllBookmarks = asyncHandler(async (req: Request, res: Response, next: NextFunction) => {
