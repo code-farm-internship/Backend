@@ -85,7 +85,7 @@ export const authService = {
             throw new BadRequestError('Tài khoản chưa được xác thực qua email');
         }
 
-        const tokens = generateAuthTokens({ _id: user._id, role: user.role });
+        const tokens = generateAuthTokens({ userId: user._id, role: user.role });
 
         saveToken(tokens.refreshToken, user._id.toString(), Token.REFRESH);
 
