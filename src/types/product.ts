@@ -49,6 +49,7 @@ export interface IProduct extends mongoose.Document {
     vendorId: Schema.Types.ObjectId;
     variants: ProductVariant[];
     variantFormats: VariantFormat[];
+    slug: string;
 }
 
 export default IProduct;

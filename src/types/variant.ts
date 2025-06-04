@@ -8,6 +8,7 @@ export interface IProductVariant extends mongoose.Document {
     discountId?: Schema.Types.ObjectId;
     formatId: Schema.Types.ObjectId;
     imageRef?: string;
+    sku: string;
 }
 
 export interface IVariantItem {

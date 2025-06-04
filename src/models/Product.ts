@@ -1,4 +1,5 @@
 import { ProductLanguage, ProductStatus } from '@/constants/enum';
+import slugMiddleware from '@/middlewares/generateSlugMidleware';
 import IProduct from '@/types/product';
 import mongoose, { Schema } from 'mongoose';
 
@@ -106,12 +107,18 @@ const productSchema = new Schema<IProduct>(
             ],
             default: [],
         },
+        slug: {
+            type: String,
+            unique: true,
+        },
     },
     {
         timestamps: true,
         versionKey: false,
     },
 );
+
+productSchema.plugin(slugMiddleware('name', 'slug'));
 
 const Product = mongoose.model('Product', productSchema);
 export default Product;

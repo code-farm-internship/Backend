@@ -2,17 +2,19 @@ import { ProductStatus } from '@/constants/enum';
 import { BadRequestError, NotFoundError } from '@/error/customError';
 import APIQuery from '@/helpers/apiQuery';
 import customResponse from '@/helpers/response';
-import Discount from '@/models/Discount';
 import Product from '@/models/Product';
 import ProductVariant from '@/models/ProductVariant';
 import { IFormat } from '@/types/format';
 import { IVariantItem } from '@/types/variant';
 import { removeFile, uploadMutipleFile, uploadSingleFile } from '@/utils/cloudinaryUploads';
+import { generateRandomSKU } from '@/utils/generateSku';
+import { updateProductSchema } from '@/validations/product/productSchema';
+import { createVariantSchema, updateVariantSchema } from '@/validations/variant/variantSchema';
 import { NextFunction, Request, Response } from 'express';
 import { ReasonPhrases, StatusCodes } from 'http-status-codes';
-import mongoose from 'mongoose';
+import _ from 'lodash';
 
-export const createProduct = async (req: Request, res: Response, next: NextFunction) => {
+export const createProduct = async (req: Request, res: Response) => {
     const files = req.files as { [fieldName: string]: Express.Multer.File | Express.Multer.File[] };
     const nameToLowerCase = req.body.name.toLowerCase();
     const body = { ...req.body, name: nameToLowerCase };
@@ -55,14 +57,25 @@ export const createProduct = async (req: Request, res: Response, next: NextFunct
     );
 };
 
-export const updateProduct = async (req: Request, res: Response, next: NextFunction) => {
+export const updateProduct = async (req: Request, res: Response) => {
     const files = req.files as { [fieldName: string]: Express.Multer.File | Express.Multer.File[] };
     const thumbnail = files.thumbnail as Express.Multer.File[];
     const removeImages = req.body.removeImages;
     const foundedProduct = await Product.findById(req.body.productId);
+    const body = req.body;
 
     if (!foundedProduct) {
         throw new NotFoundError('Không tìm thấy sản phẩm');
+    }
+
+    if (_.isMatch(foundedProduct, body)) {
+        return res.status(StatusCodes.NO_CONTENT).json(
+            customResponse({
+                data: null,
+                message: ReasonPhrases.NO_CONTENT,
+                status: StatusCodes.NO_CONTENT,
+            }),
+        );
     }
 
     const currentImages = foundedProduct.library?.filter((image) => !removeImages.includes(image.imageRef)) || [];
@@ -72,7 +85,7 @@ export const updateProduct = async (req: Request, res: Response, next: NextFunct
 
         if (upload) {
             await removeFile(upload.urlRef);
-            Object.assign(req.body, { thumbnail: upload.downloadURL, thumbnailRef: upload.urlRef });
+            Object.assign(body, { thumbnail: upload.downloadURL, thumbnailRef: upload.urlRef });
         }
     }
 
@@ -85,7 +98,7 @@ export const updateProduct = async (req: Request, res: Response, next: NextFunct
                 ...library.map((image) => ({ imageUrl: image.downloadURL, imageRef: image.urlRef })),
             ];
 
-            Object.assign(req.body, {
+            Object.assign(body, {
                 library: newLibrary,
             });
 
@@ -93,11 +106,13 @@ export const updateProduct = async (req: Request, res: Response, next: NextFunct
         }
     }
 
-    const product = await Product.updateOne({ _id: req.body.productId }, { $set: req.body });
+    Object.assign(foundedProduct, body);
+
+    const updatedProduct = await foundedProduct.save();
 
     return res.status(StatusCodes.OK).json(
         customResponse({
-            data: product,
+            data: updatedProduct,
             message: ReasonPhrases.OK,
             status: StatusCodes.OK,
         }),
@@ -107,13 +122,20 @@ export const updateProduct = async (req: Request, res: Response, next: NextFunct
 export const createProductVariant = async (req: Request, res: Response, next: NextFunction) => {
     const files = req.files as { [fieldName: string]: Express.Multer.File[] };
     const variants = JSON.parse(req.body.variants);
-    const { productId } = req.body;
+    const productId = req.body.productId;
     const variantImageMap = new Map();
     let maxVariantPrice = 0;
-    let minVariantPrice = Number.MIN_SAFE_INTEGER;
+    let minVariantPrice = -1;
 
-    if (!variants || (Array.isArray(variants) && variants.length === 0)) {
-        throw new BadRequestError('Biến thể không hợp lệ');
+    const dataToValidate = {
+        productId,
+        variants,
+    };
+    const { error } = createVariantSchema.validate(dataToValidate, { abortEarly: false });
+
+    if (error) {
+        const message = error.details.map((err) => err.message);
+        return next(new BadRequestError(message.join(' ')));
     }
 
     const product = await Product.findById(productId).populate<{ variantFormats: IFormat[] }>({
@@ -145,6 +167,7 @@ export const createProductVariant = async (req: Request, res: Response, next: Ne
                     const image = variantImageMap.get(variant.imageRef);
                     variant.image = image.downloadURL;
                     variant.imageUrlRef = image.urlRef;
+                    variant.sku = await generateRandomSKU();
                 }
             }
         }
@@ -189,18 +212,28 @@ export const createProductVariant = async (req: Request, res: Response, next: Ne
 
 export const updateProductVariant = async (req: Request, res: Response, next: NextFunction) => {
     const files = req.files as { [fieldName: string]: Express.Multer.File[] };
-    const variants = JSON.parse(req.body.variants || '[]');
-    const oldVariantImages = JSON.parse(req.body.oldVariantImages || '[]');
-    const { productId } = req.body;
+    const variants = JSON.parse(req.body.variants);
+    const removeImages = JSON.parse(req.body.removeImages);
+    const productId = req.body.productId;
     const variantImageMap = new Map();
     const newVariants = [];
     let maxVariantPrice = 0;
-    let minVariantPrice = Number.MIN_SAFE_INTEGER;
+    let minVariantPrice = -1;
+    const dataToValidate = {
+        productId,
+        variants,
+        removeImages,
+    };
+    const { error } = updateVariantSchema.validate(dataToValidate, { abortEarly: false });
+
+    if (error) {
+        const message = error.details.map((err) => err.message);
+        return next(new BadRequestError(message.join(' ')));
+    }
 
     const product = await Product.findById(productId).populate<{ variantFormats: IFormat[] }>({
         path: 'variantFormats',
     });
-
     if (!product) {
         throw new NotFoundError('Không tìm thấy sản phẩm');
     }
@@ -231,7 +264,7 @@ export const updateProductVariant = async (req: Request, res: Response, next: Ne
             }
         }
         await Promise.all([
-            ...oldVariantImages.map((imageRef: string) => removeFile(imageRef)),
+            ...removeImages.map((imageRef: string) => removeFile(imageRef)),
             ...variantsImages.filter((image) => !image.isUsed).map((image) => removeFile(image.urlRef)),
         ]);
     }
@@ -277,9 +310,10 @@ export const updateProductVariant = async (req: Request, res: Response, next: Ne
     );
 };
 
-export const getAllProducts = async (req: Request, res: Response, next: NextFunction) => {
+export const getAllProducts = async (req: Request, res: Response) => {
     const limit = req.params.limit ? Number(req.params.limit) : 1;
     const query = { isAvailable: true, ...req.query };
+    const currentDate = new Date();
 
     const feature = new APIQuery(
         Product.find({})
@@ -288,10 +322,19 @@ export const getAllProducts = async (req: Request, res: Response, next: NextFunc
                 {
                     path: 'variants',
                     select: '-imageUrlRef',
-                    populate: {
-                        path: 'formatId',
-                        select: '-createdAt -updatedAt',
-                    },
+                    populate: [
+                        {
+                            path: 'formatId',
+                            select: '-createdAt -updatedAt',
+                        },
+                        {
+                            path: 'discountId',
+                            match: {
+                                startDate: { $gt: currentDate },
+                            },
+                            select: '-createdAt -updatedAt',
+                        },
+                    ],
                 },
                 {
                     path: 'categoryId',
@@ -323,7 +366,7 @@ export const getAllProducts = async (req: Request, res: Response, next: NextFunc
     );
 };
 
-export const getVariantsByProduct = async (req: Request, res: Response, next: NextFunction) => {
+export const getVariantsByProduct = async (req: Request, res: Response) => {
     const variants = await Product.find({ _id: req.params.productId }).select('variants').populate({
         path: 'variants',
     });
@@ -340,7 +383,7 @@ export const getVariantsByProduct = async (req: Request, res: Response, next: Ne
     );
 };
 
-export const getRelatedProducts = async (req: Request, res: Response, next: NextFunction) => {
+export const getRelatedProducts = async (req: Request, res: Response) => {
     const { categoryId, productId } = req.body;
 
     const products = await Product.find({ categoryId, _id: { $ne: productId } })
@@ -356,7 +399,7 @@ export const getRelatedProducts = async (req: Request, res: Response, next: Next
     );
 };
 
-export const getBestSeller = async (req: Request, res: Response, next: NextFunction) => {
+export const getBestSeller = async (req: Request, res: Response) => {
     const products = await Product.find().sort({ sold: 'desc' }).limit(10);
     return res.status(StatusCodes.OK).json(
         customResponse({
@@ -367,7 +410,7 @@ export const getBestSeller = async (req: Request, res: Response, next: NextFunct
     );
 };
 
-export const getFeaturedProducts = async (req: Request, res: Response, next: NextFunction) => {
+export const getFeaturedProducts = async (req: Request, res: Response) => {
     const products = await Product.find({ status: ProductStatus.FEATURED }).sort({ reviewCount: 'desc' }).limit(10);
     return res.status(StatusCodes.OK).json(
         customResponse({
@@ -378,7 +421,7 @@ export const getFeaturedProducts = async (req: Request, res: Response, next: Nex
     );
 };
 
-export const getNewProducts = async (req: Request, res: Response, next: NextFunction) => {
+export const getNewProducts = async (req: Request, res: Response) => {
     const products = await Product.find({ status: ProductStatus.NEW }).limit(10);
     return res.status(StatusCodes.OK).json(
         customResponse({
@@ -389,7 +432,7 @@ export const getNewProducts = async (req: Request, res: Response, next: NextFunc
     );
 };
 
-export const getDetailProduct = async (req: Request, res: Response, next: NextFunction) => {
+export const getDetailProduct = async (req: Request, res: Response) => {
     const product = await Product.findById(req.params.id).populate([
         {
             path: 'variants',
@@ -427,7 +470,7 @@ export const getDetailProduct = async (req: Request, res: Response, next: NextFu
     );
 };
 
-export const hiddenProduct = async (req: Request, res: Response, next: NextFunction) => {
+export const hiddenProduct = async (req: Request, res: Response) => {
     const foundedProduct = await Product.findOneAndUpdate(
         { _id: req.params.id, isAvailable: true },
         { isAvailable: false },

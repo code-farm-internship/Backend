@@ -4,7 +4,7 @@ import Joi from 'joi';
 
 export const validator = (schema: Joi.Schema) => {
     return (req: Request, res: Response, next: NextFunction) => {
-        const { error } = schema.validate(req.body, {
+        const { error, value } = schema.validate(req.body, {
             abortEarly: false,
             allowUnknown: true,
             stripUnknown: true,
@@ -14,6 +14,7 @@ export const validator = (schema: Joi.Schema) => {
             const message = error.details.map((err) => err.message);
             return next(new BadRequestError(message.join(' ')));
         }
+        req.body = value;
         next();
     };
 };
