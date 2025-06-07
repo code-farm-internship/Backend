@@ -24,21 +24,6 @@ export enum TransactionStatus {
     FAILED = 'failed',
 }
 
-export enum CouponApplyTo {
-    All = 'all',
-    Category = 'category',
-}
-
-export enum CouponUseFor {
-    People = 'people',
-    Person = 'person',
-}
-
-export enum CouponDiscountType {
-    Percentage = 'percentage',
-    Fixed = 'fixed',
-}
-
 export enum ProductLanguage {
     English = 'english',
     Vietnamese = 'vietnamese',

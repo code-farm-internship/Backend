@@ -1,4 +1,4 @@
-import { BadRequestError } from '@/error/customError';
+import { BadRequestFormError } from '@/error/customError';
 import { NextFunction, Request, Response } from 'express';
 import Joi from 'joi';
 
@@ -11,8 +11,11 @@ export const validator = (schema: Joi.Schema) => {
         });
 
         if (error) {
-            const message = error.details.map((err) => err.message);
-            return next(new BadRequestError(message.join(' ')));
+            const message = error.details.map((err) => ({
+                message: err.message,
+                field: err.path.join(''),
+            }));
+            return next(new BadRequestFormError('Có lỗi xảy ra!', message));
         }
         req.body = value;
         next();

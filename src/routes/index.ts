@@ -6,6 +6,7 @@ import formatRoutes from './format.routes';
 import productRoutes from './product.routes';
 import cartRoutes from './cart.routes';
 import discountRoutes from './discount.routes';
+import couponRoutes from './coupon.routes';
 
 const router = Router();
 
@@ -16,5 +17,6 @@ router.use('/formats', formatRoutes);
 router.use('/products', productRoutes);
 router.use('/carts', cartRoutes);
 router.use('/discounts', discountRoutes);
+router.use('/coupons', couponRoutes);
 
 export default router;

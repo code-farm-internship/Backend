@@ -1,84 +1,92 @@
-import { CouponApplyTo, CouponDiscountType, CouponUseFor } from '@/constants/enum';
-import mongoose, { Schema, Document } from 'mongoose';
-
-export interface ICoupon extends Document {
-    categoryId?: mongoose.Types.ObjectId | null;
-    code: string;
-    description?: string;
-    applyTo: CouponApplyTo;
-    useFor: CouponUseFor;
-    discountType: CouponDiscountType;
-    discountValue: number;
-    minOrderValue: number;
-    maxDiscountAmount: number;
-    usageLimit: number;
-    usagePerUser?: number | null;
-    startDate: Date;
-    endDate: Date;
-    expiredAt: Date;
-    createdAt?: Date;
-    updatedAt?: Date;
-}
+import { CouponDiscountType, CouponStatus, CouponTarget, CouponType } from '@/constants/coupon';
+import { ICoupon } from '@/types/coupon';
+import { generateUniqueCouponCode } from '@/utils/generateCouponCode';
+import mongoose, { CallbackError, Schema } from 'mongoose';
 
 const couponSchema = new Schema<ICoupon>(
     {
-        categoryId: {
-            type: mongoose.Schema.Types.ObjectId,
-            ref: 'Category',
-            default: null,
-        },
         code: {
             type: String,
-            unique: true,
-            required: true,
             trim: true,
+            default: '',
+        },
+        name: {
+            type: String,
+            required: true,
         },
         description: {
             type: String,
         },
-        applyTo: {
+        target: {
             type: String,
-            enum: Object.values(CouponApplyTo),
-            required: true,
+            enum: Object.values(CouponTarget),
+            default: CouponTarget.PUBLIC,
         },
-        useFor: {
+        couponType: {
             type: String,
-            enum: Object.values(CouponUseFor),
-            required: true,
+            enum: Object.values(CouponType),
+            default: CouponType.DISCOUNT,
         },
         discountType: {
             type: String,
             enum: Object.values(CouponDiscountType),
+            default: CouponDiscountType.PERCENTAGE,
             required: true,
         },
         discountValue: {
             type: Number,
+            min: 1,
             required: true,
         },
         minOrderValue: {
             type: Number,
+            min: 0,
             required: true,
         },
-        maxDiscountAmount: {
+        maxDiscountValue: {
             type: Number,
-            required: true,
+            min: 0,
         },
-        usageLimit: {
+        stock: {
             type: Number,
+            min: 0,
             required: true,
         },
         usagePerUser: {
             type: Number,
-            default: null,
+            min: 1,
+            default: 1,
+        },
+        status: {
+            type: String,
+            enum: Object.values(CouponStatus),
+            default: CouponStatus.ACTIVE,
+        },
+        isCategoryExcluded: {
+            type: Boolean,
+            default: false,
+        },
+        categories: {
+            type: [
+                {
+                    type: mongoose.Schema.Types.ObjectId,
+                    ref: 'Category',
+                },
+            ],
+
+            default: [],
         },
         startDate: {
             type: Date,
+            default: null,
         },
         endDate: {
             type: Date,
+            default: null,
         },
         expiredAt: {
             type: Date,
+            default: Date.now,
             required: true,
         },
     },
@@ -88,6 +96,19 @@ const couponSchema = new Schema<ICoupon>(
     },
 );
 
-// MODEL
-const Coupon = mongoose.model<ICoupon>('Coupon', couponSchema);
+couponSchema.index({ code: 1 });
+
+couponSchema.pre('save', async function (next) {
+    try {
+        if (this.isNew || this.isModified('name')) {
+            const code = await generateUniqueCouponCode();
+            this.code = code;
+        }
+    } catch (err) {
+        return next(err as CallbackError);
+    }
+    next();
+});
+
+const Coupon = mongoose.model('Coupon', couponSchema);
 export default Coupon;
