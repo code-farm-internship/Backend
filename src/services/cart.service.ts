@@ -45,7 +45,9 @@ export const addItemToCart = async (req: Request, res: Response, next: NextFunct
     const body = req.body;
     const cart = await Cart.findOne({ userId: req.userId });
     const variants = await ProductVariant.findOne({ _id: body.variantId });
-    const foundedCartItem = cart?.items.find((item) => item.variantId.toString() === body.variantId);
+    const foundedCartItem = cart?.items.find(
+        (item) => item.variantId.toString() === body.variantId,
+    );
 
     if (!variants) {
         throw new BadRequestError('Sản phẩm này không tồn tại');

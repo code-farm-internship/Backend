@@ -6,10 +6,13 @@ import mongoose, { Schema } from 'mongoose';
 const detailInformationSchema = new Schema(
     {
         publisher: { type: Date },
-        author: { type: String, required: true },
         pages: { type: Number },
         publicationDate: { type: Date },
-        languague: { type: String, enum: Object.values(ProductLanguage), default: ProductLanguage.Vietnamese },
+        languague: {
+            type: String,
+            enum: Object.values(ProductLanguage),
+            default: ProductLanguage.Vietnamese,
+        },
         physicalAttributes: {
             width: { type: Number, default: 0 },
             height: { type: Number, default: 0 },
@@ -79,6 +82,7 @@ const productSchema = new Schema<IProduct>(
             ref: 'Vendor',
             required: true,
         },
+        author: { type: String, required: true },
         variants: {
             type: [
                 {

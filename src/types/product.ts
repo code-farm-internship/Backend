@@ -21,7 +21,6 @@ interface PhysicalAttributes {
 
 interface DetailInformation {
     publisher?: Date;
-    author?: string;
     pages?: number;
     publicationDate?: Date;
     physicalAttributes?: PhysicalAttributes;
@@ -33,10 +32,12 @@ interface IPriceRange {
 }
 
 export interface IProduct extends mongoose.Document {
+    _id: mongoose.Types.ObjectId;
     name: string;
     description?: string;
     rating: number;
     reviewCount: number;
+    author: string;
     sold: number;
     status: ProductStatus;
     thumbnail?: string;

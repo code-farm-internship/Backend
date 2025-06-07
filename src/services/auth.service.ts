@@ -27,7 +27,11 @@ export const authService = {
     refresh: async (req: Request, res: Response, next: NextFunction) => {
         const token = req.cookies.jwt;
 
-        const foundedToken = await tokenService.verifyToken(token, config.jwt.jwtRefreshTokenKey, Token.REFRESH);
+        const foundedToken = await tokenService.verifyToken(
+            token,
+            config.jwt.jwtRefreshTokenKey,
+            Token.REFRESH,
+        );
 
         const user = {
             _id: foundedToken.userId?._id,
@@ -185,7 +189,9 @@ export const authService = {
             await account.save();
         } catch (error: any) {
             if (error.name === 'TokenExpiredError') {
-                throw new BadRequestError('Token xác minh đã hết hạn. Vui lòng yêu cầu gửi lại email xác minh.');
+                throw new BadRequestError(
+                    'Token xác minh đã hết hạn. Vui lòng yêu cầu gửi lại email xác minh.',
+                );
             }
             throw new BadRequestError('Token không hợp lệ');
         }
