@@ -85,26 +85,18 @@ export const getUserCoupons = async (req: Request, res: Response) => {
             couponTypeFilter = coupon.couponType === query.type;
         }
 
-        if (
-            query.categories &&
-            typeof query.categories === 'string' &&
-            query.categories.includes(',')
-        ) {
+        if (query.categories && typeof query.categories === 'string' && query.categories.includes(',')) {
             const categoriesQueryArr = query.categories.split(',');
 
-            couponCategories = coupon.categories.some((cate) =>
-                categoriesQueryArr.includes(cate._id.toString()),
-            );
+            couponCategories = coupon.categories.some((cate) => categoriesQueryArr.includes(cate._id.toString()));
         }
 
         return searchName && isUsed && couponTypeFilter && couponCategories;
     });
 
-    const allCategoryIds = filterCouponsData.flatMap((coupon) =>
-        coupon.categories.map((cat) => cat._id.toString()),
-    );
-
-    const uniqueCategoryIds = [...new Set(allCategoryIds)];
+    const uniqueCategoryIds = [
+        ...new Set(filterCouponsData.flatMap((coupon) => coupon.categories.map((cat) => cat._id.toString()))),
+    ];
 
     const categoriesMap = new Map();
 
@@ -114,15 +106,12 @@ export const getUserCoupons = async (req: Request, res: Response) => {
             .lean();
 
         categoriesData.forEach((cat) => {
-            console.log(cat);
             categoriesMap.set(cat._id.toString(), cat);
         });
     }
 
     let couponAvailable = filterCouponsData.map((coupon) => {
-        const populatedCategories = coupon.categories.map((cat) =>
-            categoriesMap.get(cat._id.toString()),
-        );
+        const populatedCategories = coupon.categories.map((cat) => categoriesMap.get(cat._id.toString()));
 
         return {
             ...coupon,
@@ -241,38 +230,6 @@ export const collectCoupon = async (req: Request, res: Response) => {
     );
 };
 
-//@[GET] client
-export const getAvailableCoupons = async (req: Request, res: Response) => {
-    const foundedCoupons = await Coupon.find({
-        status: CouponStatus.ACTIVE,
-        $or: [
-            {
-                target: CouponTarget.PUBLIC,
-            },
-            {
-                target: CouponTarget.NEW_USER,
-            },
-        ],
-    }).lean();
-
-    const discountCoupons = foundedCoupons.filter(
-        (coupon) => coupon.couponType === CouponType.DISCOUNT,
-    );
-    const freeShipCoupons = foundedCoupons.filter(
-        (coupon) => coupon.couponType === CouponType.FREESHIP,
-    );
-
-    return res.status(StatusCodes.OK).json(
-        customResponse({
-            data: {
-                discount: discountCoupons,
-                freeShip: freeShipCoupons,
-            },
-            message: ReasonPhrases.OK,
-            status: StatusCodes.OK,
-        }),
-    );
-};
 //@[POST]
 export const createCoupon = async (req: Request, res: Response) => {
     const body = req.body;
@@ -346,8 +303,7 @@ export const changeStatusCoupon = async (req: Request, res: Response) => {
     if (!foundedCoupon) {
         throw new NotFoundError('Coupon không tồn tại');
     }
-    foundedCoupon.status =
-        foundedCoupon.status === CouponStatus.ACTIVE ? CouponStatus.INACTIVE : CouponStatus.ACTIVE;
+    foundedCoupon.status = foundedCoupon.status === CouponStatus.ACTIVE ? CouponStatus.INACTIVE : CouponStatus.ACTIVE;
 
     return res.status(StatusCodes.OK).json(
         customResponse({

@@ -1,40 +1,97 @@
+import { CouponStatus, CouponTarget } from '@/constants/coupon';
 import { BadRequestError, NotFoundError } from '@/error/customError';
 import customResponse from '@/helpers/response';
 import Cart from '@/models/Cart';
+import Category from '@/models/Category';
+import Coupon from '@/models/Coupon';
 import ProductVariant from '@/models/ProductVariant';
+import { ICart } from '@/types/cart';
 import { NextFunction, Request, Response } from 'express';
 import { ReasonPhrases, StatusCodes } from 'http-status-codes';
+import _ from 'lodash';
 
 export const getUserCart = async (req: Request, res: Response, next: NextFunction) => {
-    console.log(req.userId);
-    const cart = await Cart.findOne({ userId: req.userId }).populate({
-        path: 'items',
-        select: '-createdAt -updatedAt',
-        populate: [
+    const now = new Date();
+    const categoriesMap = new Map();
+    // need ICart type for populate user coupon
+    const foundedCart = await Cart.findOne({ userId: req.userId })
+        .populate<ICart>([
             {
-                path: 'productId',
-                select: 'name _id',
-            },
-            {
-                path: 'variantId',
-                select: '-createdAt -updatedAt -imageUrlRef',
+                path: 'items',
+                select: '-createdAt -updatedAt',
                 populate: [
                     {
-                        path: 'formatId',
-                        select: '-createdAt -updatedAt',
+                        path: 'productId',
+                        select: 'name _id',
                     },
                     {
-                        path: 'discountId',
-                        select: '-createdAt -updatedAt -startDate -endDate',
+                        path: 'variantId',
+                        select: '-createdAt -updatedAt -imageUrlRef',
+                        populate: [
+                            {
+                                path: 'formatId',
+                                select: '-createdAt -updatedAt',
+                            },
+                            {
+                                path: 'discountId',
+                                select: '-createdAt -updatedAt',
+                                match: {
+                                    endDate: { $gt: now },
+                                },
+                            },
+                        ],
                     },
                 ],
+            },
+            {
+                path: 'userId',
+                select: 'coupons',
+            },
+        ])
+        .lean();
+
+    const foundedCoupons = await Coupon.find({
+        status: CouponStatus.ACTIVE,
+        $or: [
+            {
+                target: CouponTarget.PUBLIC,
+            },
+            {
+                target: CouponTarget.NEW_USER,
             },
         ],
     });
 
+    let userCoupons = foundedCart?.userId.coupons || [];
+    const uniqueCategoryIds = [...new Set(userCoupons.flatMap((coupon) => coupon.categories))];
+    const categories = await Category.find({
+        _id: {
+            $in: uniqueCategoryIds,
+        },
+    }).lean();
+
+    categories.forEach((cate) => {
+        categoriesMap.set(cate._id.toString(), cate);
+    });
+
+    userCoupons = userCoupons.map((coupon) => {
+        const categoriesPoplated = coupon.categories.map((cate) => {
+            return categoriesMap.get(cate._id.toString());
+        });
+        return {
+            ...coupon,
+            categories: categoriesPoplated,
+        };
+    });
+    const cart = _.omit(foundedCart, 'userId');
+    const coupons = [...userCoupons, ...foundedCoupons];
+
     return res.status(StatusCodes.OK).json(
         customResponse({
-            data: cart,
+            data: {
+                cart,
+                coupons,
+            },
             message: ReasonPhrases.OK,
             status: StatusCodes.OK,
         }),
@@ -45,9 +102,7 @@ export const addItemToCart = async (req: Request, res: Response, next: NextFunct
     const body = req.body;
     const cart = await Cart.findOne({ userId: req.userId });
     const variants = await ProductVariant.findOne({ _id: body.variantId });
-    const foundedCartItem = cart?.items.find(
-        (item) => item.variantId.toString() === body.variantId,
-    );
+    const foundedCartItem = cart?.items.find((item) => item.variantId.toString() === body.variantId);
 
     if (!variants) {
         throw new BadRequestError('Sản phẩm này không tồn tại');

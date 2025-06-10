@@ -48,9 +48,9 @@ router.post(
 // PUT
 router.put(
     '/update',
-    validator(updateProductSchema),
     authenticate,
     authorize(ROLE.ADMIN),
+    validator(updateProductSchema),
     upload.fields([
         { name: 'thumbnail', maxCount: 1 },
         { name: 'library', maxCount: 7 },
@@ -59,9 +59,9 @@ router.put(
 );
 router.put(
     '/variant/update',
-    validator(updateVariantSchema),
     authenticate,
     authorize(ROLE.MANAGER, ROLE.ADMIN),
+    validator(updateVariantSchema),
     upload.fields([{ name: 'variantImages', maxCount: 5 }]),
     productController.updateProductVariant,
 );

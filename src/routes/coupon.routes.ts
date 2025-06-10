@@ -12,7 +12,7 @@ const router = Router();
 router.get('/all', authenticate, authorize(ROLE.ADMIN), couponController.getAllCoupons);
 router.get('/me', authenticate, couponController.getUserCoupons);
 router.get('/collect/:id', authenticate, couponController.collectCoupon);
-router.get('/:code', authenticate, couponController.getDetailCoupon);
+router.get('/:code', couponController.getDetailCoupon);
 
 // POST
 router.post(
@@ -33,11 +33,6 @@ router.put(
 );
 // PACTH
 router.patch('/collectable', authenticate, couponController.getCollectableCoupons);
-router.patch(
-    '/change-status/:id',
-    authenticate,
-    authorize(ROLE.ADMIN),
-    couponController.changeStatusCoupon,
-);
+router.patch('/change-status/:id', authenticate, authorize(ROLE.ADMIN), couponController.changeStatusCoupon);
 
 export default router;

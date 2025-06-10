@@ -100,7 +100,7 @@ couponSchema.index({ code: 1 });
 
 couponSchema.pre('save', async function (next) {
     try {
-        if (this.isNew || this.isModified('name')) {
+        if (this.isNew) {
             const code = await generateUniqueCouponCode();
             this.code = code;
         }
