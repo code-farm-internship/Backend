@@ -45,6 +45,17 @@ const orderItemSchema = new Schema(
     },
 );
 
+const addressSchema = new Schema(
+    {
+        detailAddress: { type: String, required: true },
+        province: { type: String, required: true },
+        district: { type: String, required: true },
+        ward: { type: String, required: true },
+    },
+    {
+        _id: false,
+    });
+
 const orderSchema = new Schema(
     {
         userId: {
@@ -69,10 +80,7 @@ const orderSchema = new Schema(
             required: true,
         },
         shippingAddress: {
-            detailAddress: String,
-            province: String,
-            district: String,
-            ward: String,
+            type: addressSchema,
             required: true,
         },
         status: {
@@ -123,6 +131,10 @@ const orderSchema = new Schema(
         couponId: {
             type: mongoose.Schema.Types.ObjectId,
             ref: 'Coupon',
+        },
+        isDeleted: {
+            type: Boolean,
+            default: false,
         },
     },
     {

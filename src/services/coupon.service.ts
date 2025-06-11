@@ -313,3 +313,23 @@ export const changeStatusCoupon = async (req: Request, res: Response) => {
         }),
     );
 };
+
+//@[SERVICE]
+/**
+ * Xác thực coupon
+ * @param coupon Coupon cần xác thực
+ * @param userId ID người dùng
+ * @param cart Tổng đơn hàng / sản phẩm... 
+ */
+export const validateCoupon = async (coupon: any, userId: string, cart: any) => {
+  // TODO
+};
+
+/**
+ * Tính toán giá trị giảm giá từ coupon
+ * @param coupon Coupon đang áp dụng
+ * @param cart Tổng đơn hàng / sản phẩm...
+ */
+export const calculateDiscount = (coupon: any, cart: any) => {
+  // TODO: 
+};
