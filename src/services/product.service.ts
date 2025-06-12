@@ -80,14 +80,13 @@ export const updateProduct = async (req: Request, res: Response) => {
         );
     }
 
-    const currentImages =
-        foundedProduct.library?.filter((image) => !removeImages.includes(image.imageRef)) || [];
+    const currentImages = foundedProduct.library?.filter((image) => !removeImages.includes(image.imageRef)) || [];
 
     if (thumbnail && thumbnail.length > 0) {
         const upload = await uploadSingleFile(thumbnail[0] as Express.Multer.File);
 
         if (upload) {
-            await removeFile(upload.urlRef);
+            await removeFile(foundedProduct.thumbnailRef as string);
             Object.assign(body, { thumbnail: upload.downloadURL, thumbnailRef: upload.urlRef });
         }
     }
@@ -162,9 +161,7 @@ export const createProductVariant = async (req: Request, res: Response, next: Ne
     }
 
     if (files.variantImages) {
-        const variantsImages = await uploadMutipleFile(
-            files.variantImages as Express.Multer.File[],
-        );
+        const variantsImages = await uploadMutipleFile(files.variantImages as Express.Multer.File[]);
         if (variantsImages) {
             for (const variantImage of variantsImages) {
                 variantImageMap.set(variantImage.originName, variantImage);
@@ -255,9 +252,7 @@ export const updateProductVariant = async (req: Request, res: Response, next: Ne
     }
 
     if (files.variantImages) {
-        const variantsImages = await uploadMutipleFile(
-            files.variantImages as Express.Multer.File[],
-        );
+        const variantsImages = await uploadMutipleFile(files.variantImages as Express.Multer.File[]);
 
         if (variantsImages) {
             for (const variantImage of variantsImages) {
@@ -275,9 +270,7 @@ export const updateProductVariant = async (req: Request, res: Response, next: Ne
         }
         await Promise.all([
             ...removeImages.map((imageRef: string) => removeFile(imageRef)),
-            ...variantsImages
-                .filter((image) => !image.isUsed)
-                .map((image) => removeFile(image.urlRef)),
+            ...variantsImages.filter((image) => !image.isUsed).map((image) => removeFile(image.urlRef)),
         ]);
     }
 
@@ -423,9 +416,7 @@ export const getBestSeller = async (req: Request, res: Response) => {
 };
 
 export const getFeaturedProducts = async (req: Request, res: Response) => {
-    const products = await Product.find({ status: ProductStatus.FEATURED })
-        .sort({ reviewCount: 'desc' })
-        .limit(10);
+    const products = await Product.find({ status: ProductStatus.FEATURED }).sort({ reviewCount: 'desc' }).limit(10);
     return res.status(StatusCodes.OK).json(
         customResponse({
             data: products,
