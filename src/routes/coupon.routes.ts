@@ -2,7 +2,9 @@ import { ROLE } from '@/constants/allowRoles';
 import { couponController } from '@/controllers';
 import { authenticate } from '@/middlewares/authenticateMiddleware';
 import { authorize } from '@/middlewares/authorizeMiddleware';
+import { couponParamsSchema } from '@/validations/coupon/couponParamsSchema';
 import { createCouponSchema, updateCouponSchema } from '@/validations/coupon/couponSchema';
+import { paramsValidator } from '@/validations/paramsValidation';
 import { validator } from '@/validations/schemaValidator';
 import { Router } from 'express';
 
@@ -15,12 +17,13 @@ router.get('/collect/:id', authenticate, couponController.collectCoupon);
 router.get('/:code', couponController.getDetailCoupon);
 
 // POST
+router.post('/create', authenticate, authorize(ROLE.ADMIN), couponController.applyCoupon);
 router.post(
-    '/create',
+    '/apply/:code',
     authenticate,
-    authorize(ROLE.ADMIN),
+    paramsValidator(couponParamsSchema),
     validator(createCouponSchema),
-    couponController.createCoupon,
+    couponController.applyCoupon,
 );
 
 // PUT
