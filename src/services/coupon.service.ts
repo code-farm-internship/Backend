@@ -314,15 +314,33 @@ export const changeStatusCoupon = async (req: Request, res: Response) => {
     );
 };
 
+export const applyCoupon = async (req: Request, res: Response) => {
+    const code = req.params.code;
+
+    const foundedCoupon = await Coupon.findOne({ code: code }).lean();
+
+    if (!foundedCoupon) {
+        throw new NotFoundError('Coupon đã hết hạn');
+    }
+
+    return res.status(StatusCodes.OK).json(
+        customResponse({
+            data: foundedCoupon,
+            message: ReasonPhrases.OK,
+            status: StatusCodes.OK,
+        }),
+    );
+};
+
 //@[SERVICE]
 /**
  * Xác thực coupon
  * @param coupon Coupon cần xác thực
  * @param userId ID người dùng
- * @param cart Tổng đơn hàng / sản phẩm... 
+ * @param cart Tổng đơn hàng / sản phẩm...
  */
 export const validateCoupon = async (coupon: any, userId: string, cart: any) => {
-  // TODO
+    // TODO
 };
 
 /**
@@ -331,5 +349,5 @@ export const validateCoupon = async (coupon: any, userId: string, cart: any) => 
  * @param cart Tổng đơn hàng / sản phẩm...
  */
 export const calculateDiscount = (coupon: any, cart: any) => {
-  // TODO: 
+    // TODO:
 };

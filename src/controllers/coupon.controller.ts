@@ -26,3 +26,6 @@ export const updateCoupon = asyncHandler(async (req: Request, res: Response) => 
 export const changeStatusCoupon = asyncHandler(async (req: Request, res: Response) => {
     return couponService.changeStatusCoupon(req, res);
 });
+export const applyCoupon = asyncHandler(async (req: Request, res: Response) => {
+    return couponService.applyCoupon(req, res);
+});
