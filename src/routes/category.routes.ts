@@ -9,19 +9,9 @@ const router = Router();
 router.get('/all', categoryController.getAllCategories);
 router.get('/:id', categoryController.getDetailCategory);
 
-router.post(
-    '/create',
-    upload.single('image'),
-    validator(createCategorySchema),
-    categoryController.createCategory,
-);
+router.post('/create', upload.single('image'), validator(createCategorySchema), categoryController.createCategory);
 
-router.put(
-    '/update/:id',
-    upload.single('image'),
-    validator(updateCategorySchema),
-    categoryController.updateCategory,
-);
+router.put('/update/:id', upload.single('image'), validator(updateCategorySchema), categoryController.updateCategory);
 
 router.delete('/delete/:id', categoryController.deleteCategory);
 

@@ -8,3 +8,4 @@ export * as discountService from './discount.service';
 export * as bookmarkService from './bookmark.service';
 export * as orderService from './order.service';
 export * as couponService from './coupon.service';
+export * as shippingService from './shipping.service';
