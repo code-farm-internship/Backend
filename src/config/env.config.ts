@@ -15,14 +15,23 @@ const envVarsSchema = Joi.object()
         MONGODB_URL_DEV: Joi.string().description('Local Mongo DB'),
         MONGODB_URL_CLOUD: Joi.string().description('Cloud Mongo DB'),
 
+        // JWT
         JWT_ACCESS_TOKEN_KEY: Joi.string().required().description('JWT Access Token Key'),
         JWT_REFRESH_TOKEN_KEY: Joi.string().required().description('JWT Refresh Token Key'),
         JWT_ACCESS_EXPIRATION: Joi.string().default('15m').description('minutes after which access tokens expire'),
         JWT_REFRESH_EXPIRATION: Joi.string().default('30d').description('days after which refresh tokens expire'),
 
+        // CLOUDINARY
         CLOUDINARY_CLOUD_NAME: Joi.string().required().description('Cloudinay Cloud Name'),
         CLOUDINARY_API_KEY: Joi.string().required().description('JCloudinay Cloud Api Key'),
         CLOUDINARY_API_SECRET: Joi.string().required().description('JCloudinay Cloud Api Secret Key'),
+
+        // SHIPPING
+        SHIPPING_API_TOKEN: Joi.string().description('Shipping Api Token'),
+        SHIPPING_API_ENDPOINT: Joi.string().description('Shipping Api Endpoint'),
+        SHOP_ID: Joi.string().description('Shop Id'),
+        FROM_DISTRICT_ID: Joi.number().description('From District'),
+        FROM_WARD_CODE: Joi.string().description('From Ward'),
     })
     .unknown();
 
@@ -59,6 +68,13 @@ const config = {
         cloudinaryApiSecret: envVars.CLOUDINARY_API_SECRET,
     },
     clientUrl: envVars.CLIENT_URL,
+    shipping: {
+        apiToken: envVars.SHIPPING_API_TOKEN,
+        apiEndpoint: envVars.SHIPPING_API_ENDPOINT,
+        shopId: envVars.SHOP_ID,
+        fromDistrictId: envVars.FROM_DISTRICT_ID,
+        fromWardCode: envVars.FROM_WARD_CODE,
+    },
 };
 
 export default config;
