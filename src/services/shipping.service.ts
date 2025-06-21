@@ -1,18 +1,19 @@
 import axiosInstance from '@/config/axios.config';
 import customResponse from '@/helpers/response';
-import { IDistrict, IProvince, IWard } from '@/types/Ghn';
+import { IDistrict, IProvince, IWard } from '@/types/ghn';
 import { Request, Response } from 'express';
 import { ReasonPhrases, StatusCodes } from 'http-status-codes';
 
 export const getProvince = async (req: Request, res: Response) => {
     const { data: response } = await axiosInstance.get<IProvince[]>('shiip/public-api/master-data/province');
     // filter test data
-    const filteredResponse = response.filter((item) => !item.ProvinceName.includes('est'));
+    const filteredResponse = response.filter(
+        (item) => !item.ProvinceName.includes('est') && !item.ProvinceName.includes('02'),
+    );
 
     return res.status(StatusCodes.OK).json(
         customResponse({
             data: filteredResponse,
-            success: true,
             message: ReasonPhrases.OK,
             status: StatusCodes.OK,
         }),
@@ -30,7 +31,6 @@ export const getDistrict = async (req: Request, res: Response) => {
     return res.status(StatusCodes.OK).json(
         customResponse({
             data: filteredResponse,
-            success: true,
             message: ReasonPhrases.OK,
             status: StatusCodes.OK,
         }),
@@ -48,7 +48,6 @@ export const getWard = async (req: Request, res: Response) => {
     return res.status(StatusCodes.OK).json(
         customResponse({
             data: filteredResponse,
-            success: true,
             message: ReasonPhrases.OK,
             status: StatusCodes.OK,
         }),
