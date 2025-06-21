@@ -1,4 +1,5 @@
 import { BadRequestError, NotFoundError } from '@/error/customError';
+import APIQuery from '@/helpers/apiQuery';
 import customResponse from '@/helpers/response';
 import Discount from '@/models/Discount';
 import { discountSchema } from '@/validations/discount/discountSchema';
@@ -7,10 +8,38 @@ import { NextFunction, Request, Response } from 'express';
 import { ReasonPhrases, StatusCodes } from 'http-status-codes';
 
 export const getAllDiscounts = async (req: Request, res: Response, next: NextFunction) => {
-    const discounts = await Discount.find();
+    const limit = req.params.limit ? +req.params.limit : 10;
+
+    const features = new APIQuery(Discount.find(), req.query);
+    features.filter().sort().limitFields().search().paginate();
+
+    const [data, totalDocs] = await Promise.all([features.query, features.count()]);
+    const totalPages = Math.ceil(totalDocs / limit);
+
     return res.status(StatusCodes.OK).json(
         customResponse({
-            data: discounts,
+            data: {
+                data,
+                totalPages,
+                totalDocs,
+                limit,
+            },
+            message: ReasonPhrases.OK,
+            status: StatusCodes.OK,
+        }),
+    );
+};
+
+export const getDetailDiscount = async (req: Request, res: Response, next: NextFunction) => {
+    const discount = await Discount.findOne({ _id: req.params.id });
+
+    if (!discount) {
+        throw new NotFoundError('Không tim thấy giảm giá');
+    }
+
+    return res.status(StatusCodes.OK).json(
+        customResponse({
+            data: discount,
             message: ReasonPhrases.OK,
             status: StatusCodes.OK,
         }),

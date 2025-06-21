@@ -1,10 +1,11 @@
 import { orderController } from '@/controllers';
+import { authenticate } from '@/middlewares/authenticateMiddleware';
 import { Router } from 'express';
 
 const router = Router();
 
 // Tạo đơn COD
-router.post('/create/cod', orderController.createOrderCOD); // CREATE_ORDER_COD
+router.post('/create/cod', authenticate, orderController.createOrderCOD); // CREATE_ORDER_COD
 
 // Tạo đơn online
 router.post('/create/online', orderController.createOrderOnline); // CREATE_ORDER_ONLINE

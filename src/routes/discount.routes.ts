@@ -5,6 +5,8 @@ const router = Router();
 
 router.get('/all', discountController.getAllDiscounts);
 
+router.get('/:id', discountController.getDetailDiscount);
+
 // Tạo mới discount
 router.post('/', discountController.createDiscount);
 

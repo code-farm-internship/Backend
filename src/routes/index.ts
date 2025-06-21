@@ -8,6 +8,7 @@ import cartRoutes from './cart.routes';
 import discountRoutes from './discount.routes';
 import couponRoutes from './coupon.routes';
 import shippingRoutes from './shipping.routes';
+import orderRoutes from './order.routes';
 
 const router = Router();
 
@@ -20,5 +21,6 @@ router.use('/carts', cartRoutes);
 router.use('/discounts', discountRoutes);
 router.use('/coupons', couponRoutes);
 router.use('/shippings', shippingRoutes);
+router.use('/orders', orderRoutes);
 
 export default router;
