@@ -32,6 +32,12 @@ const envVarsSchema = Joi.object()
         SHOP_ID: Joi.string().description('Shop Id'),
         FROM_DISTRICT_ID: Joi.number().description('From District'),
         FROM_WARD_CODE: Joi.string().description('From Ward'),
+
+        // REDIS
+        REDIS_USERNAME: Joi.string().description('Redis Username'),
+        REDIS_PASSWORD: Joi.string().description('Redis Password'),
+        REDIS_HOST: Joi.string().description('Redis Host'),
+        REDIS_PORT: Joi.number().description('Redis Port'),
     })
     .unknown();
 
@@ -74,6 +80,12 @@ const config = {
         shopId: envVars.SHOP_ID,
         fromDistrictId: envVars.FROM_DISTRICT_ID,
         fromWardCode: envVars.FROM_WARD_CODE,
+    },
+    redis: {
+        redisUsername: envVars.REDIS_USERNAME,
+        redisPassword: envVars.REDIS_PASSWORD,
+        redisHost: envVars.REDIS_HOST,
+        redisPort: envVars.REDIS_PORT,
     },
 };
 
