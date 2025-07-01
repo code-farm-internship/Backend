@@ -39,7 +39,7 @@ export const getAllFormats = async (req: Request, res: Response, next: NextFunct
     return res.status(StatusCodes.OK).json(
         customResponse({
             data: {
-                formats: data,
+                data,
                 limit,
                 totalDocs,
                 totalPage,
@@ -51,15 +51,15 @@ export const getAllFormats = async (req: Request, res: Response, next: NextFunct
 };
 
 export const getDetailFormat = async (req: Request, res: Response, next: NextFunction) => {
-    const category = await Format.findById(req.params.id).lean();
+    const format = await Format.findById(req.params.id).lean();
 
-    if (!category) {
+    if (!format) {
         throw new NotFoundError(`Không tìm thấy định dạng với id ${req.params.id}`);
     }
 
     return res.status(StatusCodes.OK).json(
         customResponse({
-            data: category,
+            data: format,
             message: ReasonPhrases.OK,
             status: StatusCodes.OK,
         }),

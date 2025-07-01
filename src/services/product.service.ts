@@ -11,7 +11,7 @@ import { generateRandomSKU } from '@/utils/generateSku';
 import { createVariantSchema, updateVariantSchema } from '@/validations/variant/variantSchema';
 import { NextFunction, Request, Response } from 'express';
 import { ReasonPhrases, StatusCodes } from 'http-status-codes';
-import _ from 'lodash';
+import _, { forEach } from 'lodash';
 
 export const createProduct = async (req: Request, res: Response) => {
     const files = req.files as { [fieldName: string]: Express.Multer.File | Express.Multer.File[] };
@@ -152,10 +152,11 @@ export const createProductVariant = async (req: Request, res: Response, next: Ne
     }
 
     const variantsFormatId = variants.map((variant: IVariantItem) => variant.formatId);
-    const checkVariantFormatExist = product.variantFormats.some((variantFormat) =>
-        variantsFormatId.includes(variantFormat._id),
-    );
+    const checkVariantFormatExist = product.variantFormats.some((variantFormat) => {
+        return variantsFormatId.includes(variantFormat._id.toString());
+    });
 
+    console.log(variantsFormatId);
     if (checkVariantFormatExist) {
         throw new BadRequestError('Biến thể không được trùng định dạng');
     }
@@ -218,17 +219,22 @@ export const createProductVariant = async (req: Request, res: Response, next: Ne
 export const updateProductVariant = async (req: Request, res: Response, next: NextFunction) => {
     const files = req.files as { [fieldName: string]: Express.Multer.File[] };
     const variants = JSON.parse(req.body.variants);
-    const removeImages = JSON.parse(req.body.removeImages);
+    const removeImages = JSON.parse(req.body.removeImages || '[]');
     const productId = req.body.productId;
     const variantImageMap = new Map();
     const newVariants = [];
     let maxVariantPrice = 0;
     let minVariantPrice = -1;
+    const seenFormatIdsInPayload = new Set();
+    const existingDbFormatIdToIdMap = new Map();
     const dataToValidate = {
         productId,
         variants,
-        removeImages,
     };
+
+    if (removeImages.length > 0) {
+        Object.assign(dataToValidate, { removeImages });
+    }
     const { error } = updateVariantSchema.validate(dataToValidate, { abortEarly: false });
 
     if (error) {
@@ -242,13 +248,29 @@ export const updateProductVariant = async (req: Request, res: Response, next: Ne
     if (!product) {
         throw new NotFoundError('Không tìm thấy sản phẩm');
     }
-    const variantsFormatId = variants.map((variant: IVariantItem) => variant.formatId);
-    const checkVariantFormatExist = product.variantFormats.some((variantFormat) =>
-        variantsFormatId.includes(variantFormat._id),
-    );
+    product.variantFormats.forEach((dbFormat) => {
+        if (dbFormat._id && dbFormat._id) {
+            existingDbFormatIdToIdMap.set(dbFormat._id, dbFormat._id.toString());
+        }
+    });
 
-    if (checkVariantFormatExist) {
-        throw new BadRequestError('Biến thể không được trùng định dạng');
+    for (const variant of variants) {
+        if (seenFormatIdsInPayload.has(variant.formatId)) {
+            throw new BadRequestError(`Biến thể không được trùng định dạng`);
+        }
+        seenFormatIdsInPayload.add(variant.formatId);
+
+        if (existingDbFormatIdToIdMap.has(variant.formatId)) {
+            const existingIdFromDb = existingDbFormatIdToIdMap.get(variant.formatId);
+
+            if (variant._id && variant._id.toString() !== existingIdFromDb) {
+                throw new BadRequestError(`Định dạng sách đã tồn tại cho một biến thể khác trong sản phẩm`);
+            }
+
+            if (!variant._id) {
+                throw new BadRequestError(`Biến thể không được trùng định dạng`);
+            }
+        }
     }
 
     if (files.variantImages) {
@@ -372,9 +394,17 @@ export const getAllProducts = async (req: Request, res: Response) => {
 };
 
 export const getVariantsByProduct = async (req: Request, res: Response) => {
-    const variants = await Product.find({ _id: req.params.productId }).select('variants').populate({
-        path: 'variants',
-    });
+    const variants = await Product.findOne({ _id: req.params.productId })
+        .select('variants')
+        .populate({
+            path: 'variants',
+            populate: [
+                {
+                    path: 'formatId',
+                },
+                { path: 'discountId' },
+            ],
+        });
 
     if (!variants) {
         throw new NotFoundError('Không tìm thấy biến thể của sản phẩm');

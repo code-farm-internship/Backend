@@ -7,10 +7,10 @@ export const variantSchema = Joi.object({
         'number.integer': 'Giá biến thể phải là số nguyên',
         'any.required': 'Giá biến thể là bắt buộc',
     }),
-    stock: Joi.number().integer().min(0).required().messages({
+    stock: Joi.number().integer().min(1).required().messages({
         'number.base': 'Số lượng tồn kho phải là số',
         'number.integer': 'Số lượng tồn kho phải là số nguyên',
-        'number.min': 'Số lượng tồn kho không được nhỏ hơn 0',
+        'number.min': 'Số lượng tồn kho phải lớn hơn 1',
         'any.required': 'Số lượng tồn kho là bắt buộc',
     }),
     discountId: Joi.string()
@@ -37,6 +37,11 @@ export const variantSchema = Joi.object({
             'string.objectId': 'Format ID phải là ObjectId hợp lệ',
             'any.required': 'Format ID là bắt buộc',
         }),
+    imageRef: Joi.string()
+        .messages({
+            'string.base': 'imageRef phải là string',
+        })
+        .optional(),
 });
 
 export const createVariantSchema = Joi.object({
@@ -47,11 +52,6 @@ export const createVariantSchema = Joi.object({
                 return helpers.error('string.objectId');
             }
             return value;
-        })
-        .messages({
-            'string.base': 'Product ID phải là chuỗi',
-            'string.objectId': 'Product ID phải là ObjectId hợp lệ',
-            'any.required': 'Product ID là bắt buộc',
         }),
     variants: Joi.array().items(variantSchema).min(1).required().messages({
         'array.base': 'Variants phải là một mảng',
@@ -93,6 +93,23 @@ const variantUpdateSchema = Joi.object({
         .messages({
             'string.objectId': 'Format ID phải là ObjectId hợp lệ',
         }),
+    _id: Joi.string()
+        .required()
+        .custom((value, helpers) => {
+            if (value && !Types.ObjectId.isValid(value)) {
+                return helpers.error('string.objectId');
+            }
+            return value;
+        })
+        .messages({
+            'string.objectId': 'Variant id phải là ObjectId hợp lệ',
+            'any.required': 'Variant id là bắt buộc',
+        }),
+    imageRef: Joi.string()
+        .messages({
+            'string.base': 'imageRef phải là string',
+        })
+        .optional(),
 });
 
 export const updateVariantSchema = Joi.object({

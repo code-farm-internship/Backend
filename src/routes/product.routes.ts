@@ -17,8 +17,8 @@ router.get('/featured', productController.getFeaturedProducts);
 router.get('/new', productController.getNewProducts);
 router.get(
     '/variant/:productId/all',
-    authenticate,
-    authorize(ROLE.MANAGER, ROLE.ADMIN),
+    // authenticate,`
+    // authorize(ROLE.MANAGER, ROLE.ADMIN),
     productController.getAllVariantsByProduct,
 );
 router.get('/:id', productController.getDetailProduct);
@@ -26,8 +26,8 @@ router.get('/:id', productController.getDetailProduct);
 // POST
 router.post(
     '/create',
-    authenticate,
-    authorize(ROLE.ADMIN),
+    // authenticate,
+    // authorize(ROLE.ADMIN),
     validator(createProductSchema),
     upload.fields([
         { name: 'thumbnail', maxCount: 1 },
@@ -38,8 +38,8 @@ router.post(
 
 router.post(
     '/variant',
-    authenticate,
-    authorize(ROLE.MANAGER, ROLE.ADMIN),
+    // authenticate,
+    // authorize(ROLE.MANAGER, ROLE.ADMIN),
     validator(createVariantSchema),
     upload.fields([{ name: 'variantImages', maxCount: 5 }]),
     productController.createProductVariant,
@@ -48,8 +48,8 @@ router.post(
 // PUT
 router.put(
     '/update',
-    authenticate,
-    authorize(ROLE.ADMIN),
+    // authenticate,
+    // authorize(ROLE.ADMIN),
     validator(updateProductSchema),
     upload.fields([
         { name: 'thumbnail', maxCount: 1 },
@@ -59,8 +59,8 @@ router.put(
 );
 router.put(
     '/variant/update',
-    authenticate,
-    authorize(ROLE.MANAGER, ROLE.ADMIN),
+    // authenticate,
+    // authorize(ROLE.MANAGER, ROLE.ADMIN),
     validator(updateVariantSchema),
     upload.fields([{ name: 'variantImages', maxCount: 5 }]),
     productController.updateProductVariant,
