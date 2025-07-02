@@ -5,7 +5,6 @@ import 'dotenv/config';
 if (process.env.NODE_ENV === 'development') {
     dotenv.config({ path: '.env.local' });
 }
-
 const envVarsSchema = Joi.object()
     .keys({
         NODE_ENV: Joi.string().valid('production', 'development').required(),
@@ -38,6 +37,15 @@ const envVarsSchema = Joi.object()
         REDIS_PASSWORD: Joi.string().description('Redis Password'),
         REDIS_HOST: Joi.string().description('Redis Host'),
         REDIS_PORT: Joi.number().description('Redis Port'),
+
+        //VNP
+        VNP_TMN_CODE: Joi.string().required().description('VNPay Merchant Code'),
+        VNP_HASH_SECRET: Joi.string().required().description('VNPay Hash Secret'),
+        VNP_URL: Joi.string()
+            .default('https://sandbox.vnpayment.vn/paymentv2/vpcpay.html')
+            .description('VNPay Payment URL'),
+        VNP_RETURN_URL: Joi.string().required().description('VNPay Return URL'),
+        VNP_IPN_URL: Joi.string().required().description('VNPay IPN URL'),
     })
     .unknown();
 
@@ -86,6 +94,13 @@ const config = {
         redisPassword: envVars.REDIS_PASSWORD,
         redisHost: envVars.REDIS_HOST,
         redisPort: envVars.REDIS_PORT,
+    },
+    vnpay: {
+        vnp_TmnCode: envVars.VNP_TMN_CODE,
+        vnp_HashSecret: envVars.VNP_HASH_SECRET,
+        vnp_Url: envVars.VNP_URL,
+        vnp_ReturnUrl: envVars.VNP_RETURN_URL,
+        vnp_IpnUrl: envVars.VNP_IPN_URL,
     },
 };
 

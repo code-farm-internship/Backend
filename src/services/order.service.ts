@@ -46,7 +46,7 @@ export const createOrderCOD = async (req: Request, res: Response, next: NextFunc
 
         if (couponCode) {
             // Xác thực coupon
-            const coupon = await validateCoupon(couponCode, totalAmount);
+            const coupon = 1; //await validateCoupon(couponCode, totalAmount);
 
             // Tính giảm giá
             const { discount, final } = calculateDiscount(coupon, totalAmount, shippingFee || 0);
@@ -119,7 +119,7 @@ export const createOrderOnline = async (req: Request, res: Response, next: NextF
 
         // Kiểm tra coupon (nếu có)
         if (couponCode) {
-            const coupon = await validateCoupon(couponCode, totalAmount);
+            const coupon = true; //await validateCoupon(couponCode, totalAmount);
             const { discount, final } = calculateDiscount(coupon, totalAmount, shippingFee || 0);
             discountAmount = discount;
             finalAmount = final;

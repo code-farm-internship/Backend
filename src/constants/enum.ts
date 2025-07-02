@@ -22,6 +22,7 @@ export enum TransactionStatus {
     PENDING = 'pending',
     SUCCESSFULLY = 'successfully',
     FAILED = 'failed',
+    COMPLETED = 'completed',
 }
 
 export enum ProductLanguage {

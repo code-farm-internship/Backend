@@ -9,3 +9,4 @@ export * as bookmarkController from './bookmark.controller';
 export * as orderController from './order.controller';
 export * as couponController from './coupon.controller';
 export * as shippingController from './shipping.controller';
+export * as paymentController from './payment.controller';
