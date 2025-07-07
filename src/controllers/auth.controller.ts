@@ -58,6 +58,10 @@ export const refresh = asyncHandler(async (req: Request, res: Response, next: Ne
     return authService.refresh(req, res, next);
 });
 
+export const logout = asyncHandler(async (req: Request, res: Response, next: NextFunction) => {
+    return authService.refresh(req, res, next);
+});
+
 export const verifyEmail = asyncHandler(async (req: Request, res: Response) => {
     const { token } = req.query;
     if (!token || typeof token !== 'string') {

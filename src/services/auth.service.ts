@@ -13,7 +13,6 @@ import { BadRequestError } from '@/error/customError';
 import { mailSender } from '@/helpers/mail.sender';
 import { ROLE } from '@/constants/allowRoles';
 import mongoose from 'mongoose';
-import { token } from 'morgan';
 
 interface RegisterData {
     email: string;
@@ -27,11 +26,7 @@ export const authService = {
     refresh: async (req: Request, res: Response, next: NextFunction) => {
         const token = req.cookies.jwt;
 
-        const foundedToken = await tokenService.verifyToken(
-            token,
-            config.jwt.jwtRefreshTokenKey,
-            Token.REFRESH,
-        );
+        const foundedToken = await tokenService.verifyToken(token, config.jwt.jwtRefreshTokenKey, Token.REFRESH);
 
         const user = {
             _id: foundedToken.userId?._id,
@@ -58,6 +53,46 @@ export const authService = {
                 status: StatusCodes.OK,
             }),
         );
+    },
+
+    logout: async (req: Request, res: Response, next: NextFunction) => {
+        try {
+            const token = req.cookies.jwt;
+
+            if (!token) {
+                return res.status(StatusCodes.OK).json(
+                    customResponse({
+                        data: null,
+                        message: 'No active session found',
+                        status: StatusCodes.OK,
+                    }),
+                );
+            }
+
+            // Xác minh refresh token để lấy userId
+            const foundedToken = await tokenService.verifyToken(token, config.jwt.jwtRefreshTokenKey, Token.REFRESH);
+            const userId = foundedToken.userId?._id.toString(); // Chuyển ObjectId thành string
+
+            // Xóa tất cả refresh token của người dùng
+            await tokenService.deleteToken(userId, Token.REFRESH);
+
+            // Xóa cookie jwt
+            res.clearCookie('jwt', {
+                httpOnly: true,
+                secure: config.env === 'production',
+                sameSite: 'lax',
+            });
+
+            return res.status(StatusCodes.OK).json(
+                customResponse({
+                    data: null,
+                    message: 'Logged out successfully',
+                    status: StatusCodes.OK,
+                }),
+            );
+        } catch (error) {
+            next(error);
+        }
     },
 
     login: async (usernameOrEmail: string, password: string) => {
@@ -189,9 +224,7 @@ export const authService = {
             await account.save();
         } catch (error: any) {
             if (error.name === 'TokenExpiredError') {
-                throw new BadRequestError(
-                    'Token xác minh đã hết hạn. Vui lòng yêu cầu gửi lại email xác minh.',
-                );
+                throw new BadRequestError('Token xác minh đã hết hạn. Vui lòng yêu cầu gửi lại email xác minh.');
             }
             throw new BadRequestError('Token không hợp lệ');
         }

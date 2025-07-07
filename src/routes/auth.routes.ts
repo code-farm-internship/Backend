@@ -28,6 +28,9 @@ router.post('/register', authController.register);
 // Đăng nhập tài khoản
 router.post('/login', authController.login);
 
+//Đăng xuất tài khoản
+router.get('/logout', authController.logout);
+
 // Làm mới access token
 router.get('/refresh', authController.refresh);
 
