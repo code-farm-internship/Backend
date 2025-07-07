@@ -9,17 +9,17 @@ import { ReasonPhrases, StatusCodes } from 'http-status-codes';
 const THREE_DAY = 259200;
 
 export const getProvince = async (req: Request, res: Response) => {
-    const cached = await redisClient.get(CACHE_KEYS.SHIPPING.PROVINCE);
+    // const cached = await redisClient.get(CACHE_KEYS.SHIPPING.PROVINCE);
 
-    if (cached) {
-        return res.status(StatusCodes.OK).json(
-            customResponse({
-                data: JSON.parse(cached),
-                message: ReasonPhrases.OK,
-                status: StatusCodes.OK,
-            }),
-        );
-    }
+    // if (cached) {
+    //     return res.status(StatusCodes.OK).json(
+    //         customResponse({
+    //             data: JSON.parse(cached),
+    //             message: ReasonPhrases.OK,
+    //             status: StatusCodes.OK,
+    //         }),
+    //     );
+    // }
 
     const { data: response } = await axiosInstance.get<IProvince[]>('shiip/public-api/master-data/province');
     // filter test data
@@ -27,12 +27,12 @@ export const getProvince = async (req: Request, res: Response) => {
         (item) => !item.ProvinceName.includes('est') && !item.ProvinceName.includes('02'),
     );
 
-    await redisClient.set(CACHE_KEYS.SHIPPING.PROVINCE, JSON.stringify(filteredResponse), {
-        expiration: {
-            type: 'EX',
-            value: THREE_DAY,
-        },
-    });
+    // await redisClient.set(CACHE_KEYS.SHIPPING.PROVINCE, JSON.stringify(filteredResponse), {
+    //     expiration: {
+    //         type: 'EX',
+    //         value: THREE_DAY,
+    //     },
+    // });
 
     return res.status(StatusCodes.OK).json(
         customResponse({
@@ -45,19 +45,19 @@ export const getProvince = async (req: Request, res: Response) => {
 
 export const getDistrict = async (req: Request, res: Response) => {
     const provinceId = +req.params.id;
-    const cacheKey = `${CACHE_KEYS.SHIPPING.DISTRICT}-${provinceId}`;
+    // const cacheKey = `${CACHE_KEYS.SHIPPING.DISTRICT}-${provinceId}`;
 
-    const cached = await redisClient.get(cacheKey);
+    // const cached = await redisClient.get(cacheKey);
 
-    if (cached) {
-        return res.status(StatusCodes.OK).json(
-            customResponse({
-                data: JSON.parse(cached),
-                message: ReasonPhrases.OK,
-                status: StatusCodes.OK,
-            }),
-        );
-    }
+    // if (cached) {
+    //     return res.status(StatusCodes.OK).json(
+    //         customResponse({
+    //             data: JSON.parse(cached),
+    //             message: ReasonPhrases.OK,
+    //             status: StatusCodes.OK,
+    //         }),
+    //     );
+    // }
 
     const { data: response } = await axiosInstance.post<IDistrict[]>('/shiip/public-api/master-data/district', {
         province_id: provinceId,
@@ -65,12 +65,12 @@ export const getDistrict = async (req: Request, res: Response) => {
     // filter test data
     const filteredResponse = response.filter((item) => !item.DistrictName.includes('est'));
 
-    await redisClient.set(CACHE_KEYS.SHIPPING.PROVINCE, JSON.stringify(filteredResponse), {
-        expiration: {
-            type: 'EX',
-            value: THREE_DAY,
-        },
-    });
+    // await redisClient.set(CACHE_KEYS.SHIPPING.PROVINCE, JSON.stringify(filteredResponse), {
+    //     expiration: {
+    //         type: 'EX',
+    //         value: THREE_DAY,
+    //     },
+    // });
 
     return res.status(StatusCodes.OK).json(
         customResponse({
@@ -83,19 +83,19 @@ export const getDistrict = async (req: Request, res: Response) => {
 
 export const getWard = async (req: Request, res: Response) => {
     const districtId = +req.params.id;
-    const cacheKey = `${CACHE_KEYS.SHIPPING.WARD}-${districtId}`;
+    // const cacheKey = `${CACHE_KEYS.SHIPPING.WARD}-${districtId}`;
 
-    const cached = await redisClient.get(cacheKey);
+    // const cached = await redisClient.get(cacheKey);
 
-    if (cached) {
-        return res.status(StatusCodes.OK).json(
-            customResponse({
-                data: JSON.parse(cached),
-                message: ReasonPhrases.OK,
-                status: StatusCodes.OK,
-            }),
-        );
-    }
+    // if (cached) {
+    //     return res.status(StatusCodes.OK).json(
+    //         customResponse({
+    //             data: JSON.parse(cached),
+    //             message: ReasonPhrases.OK,
+    //             status: StatusCodes.OK,
+    //         }),
+    //     );
+    // }
 
     const { data: response } = await axiosInstance.post<IWard[]>('shiip/public-api/master-data/ward?district_id', {
         district_id: districtId,
@@ -103,12 +103,12 @@ export const getWard = async (req: Request, res: Response) => {
     // filter test data
     const filteredResponse = response.filter((item) => !item.WardName.includes('est'));
 
-    await redisClient.set(CACHE_KEYS.SHIPPING.WARD, JSON.stringify(filteredResponse), {
-        expiration: {
-            type: 'EX',
-            value: THREE_DAY,
-        },
-    });
+    // await redisClient.set(CACHE_KEYS.SHIPPING.WARD, JSON.stringify(filteredResponse), {
+    //     expiration: {
+    //         type: 'EX',
+    //         value: THREE_DAY,
+    //     },
+    // });
     return res.status(StatusCodes.OK).json(
         customResponse({
             data: filteredResponse,

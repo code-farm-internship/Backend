@@ -1,7 +1,7 @@
 import app from './app';
 import connectDB from './config/database.config';
 import config from './config/env.config';
-import { connectRedis, disconnectRedis } from './config/redis.config';
+// import { connectRedis, disconnectRedis } from './config/redis.config';
 
 const PORT = config.port;
 const HOSTNAME = config.hostname;
@@ -13,7 +13,7 @@ connectDB().then(async () => {
     });
 });
 
-connectRedis();
+// connectRedis();
 
 const exitHandler = () => {
     if (server) {
@@ -36,16 +36,16 @@ process.on('unhandledRejection', unexpectedErrorHandler);
 
 process.on('SIGTERM', async () => {
     console.log('SIGTERM received');
-    disconnectRedis();
+    // disconnectRedis();
     if (server) {
         server.close();
     }
 });
 
-process.on('SIGINT', async () => {
-    console.log('SIGINT received');
-    disconnectRedis();
-    if (server) {
-        server.close();
-    }
-});
+// process.on('SIGINT', async () => {
+//     console.log('SIGINT received');
+//     disconnectRedis();
+//     if (server) {
+//         server.close();
+//     }
+// });
